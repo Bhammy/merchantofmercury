@@ -36,6 +36,14 @@ body[class^='bgimage-'] {
   background-image: url('../assets/bg5.gif');
 }
 
+.bgimage-6 {
+  background-image: url('../assets/bg6.gif');
+}
+
+.bgimage-7 {
+  background-image: url('../assets/bg7.gif');
+}
+
 ul {
   list-style: none;
 }
@@ -60,11 +68,12 @@ content {
 
 #game-canvas {
   border: 1px solid white;
-  background-color: black;
 }
 
 .main-creator-links {
   width: 20%;
+  background-color: rgba(0, 0, 0, 0.4);
+  border-radius: 4px;
 }
 
 .main-canvas {
@@ -74,4 +83,6 @@ content {
 
 .main-info {
   width: 20%;
+  background-color: rgba(0, 0, 0, 0.4);
+  border-radius: 4px;
 }

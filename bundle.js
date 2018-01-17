@@ -76,13 +76,16 @@ document.addEventListener("DOMContentLoaded", () => {
   canvas.height = 500;
 
   const ctx = canvas.getContext('2d');
+  ctx.fillStyle = "black";
+  ctx.rect(0, 0, 800, 500);
+  ctx.fill();
 
   let bgNum = 1;
 
   setTimeout(setInterval( () => {
     let nextNum = changeBackgroundImage(bgNum);
     bgNum = nextNum;
-  }, 10000), 10000);
+  }, 15000), 15000);
 
   
 
@@ -96,7 +99,7 @@ document.addEventListener("DOMContentLoaded", () => {
 const changeBackgroundImage = (num) => {
   console.log('changing background!');
   let nextNum = num + 1;
-  if (nextNum > 5) {
+  if (nextNum > 7) {
     nextNum = 1;
   }
   $("body").removeClass(`bgimage-${num}`).addClass(`bgimage-${nextNum}`);
