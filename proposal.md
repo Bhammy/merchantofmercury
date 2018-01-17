@@ -19,6 +19,8 @@ Using native JavaScript and HTML5 features, players can:
 
 ### Wireframes
 
+![wireframe](https://github.com/Bhammy/merchantofmercury/blob/master/game.jpg?raw=true)
+
 ### Timeline
   * Day 1: Setup backend & refresh on how to use canvas
   * Day 2: Create game in basic but playable shape (i.e. instead of sprites, use canvas shapes)
