@@ -65,8 +65,45 @@
 /************************************************************************/
 /******/ ([
 /* 0 */
+/***/ (function(module, exports, __webpack_require__) {
+
+//note - use Firebase for auth - just key/value pairs - save as bonus feature
+const changeBackgroundImage = __webpack_require__(1);
+
+document.addEventListener("DOMContentLoaded", () => {
+  const canvas = $('#game-canvas')[0];
+  canvas.width = 800;
+  canvas.height = 500;
+
+  const ctx = canvas.getContext('2d');
+
+  let bgNum = 1;
+
+  setTimeout(setInterval( () => {
+    let nextNum = changeBackgroundImage(bgNum);
+    bgNum = nextNum;
+  }, 10000), 10000);
+
+  
+
+});
+
+
+/***/ }),
+/* 1 */
 /***/ (function(module, exports) {
 
+const changeBackgroundImage = (num) => {
+  console.log('changing background!');
+  let nextNum = num + 1;
+  if (nextNum > 5) {
+    nextNum = 1;
+  }
+  $("body").removeClass(`bgimage-${num}`).addClass(`bgimage-${nextNum}`);
+  return nextNum;
+};
+
+module.exports = changeBackgroundImage;
 
 
 /***/ })

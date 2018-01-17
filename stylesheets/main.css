@@ -1,6 +1,39 @@
 body, h1, content, section, ul, li, canvas, html {
   margin: 0;
   padding: 0;
+  color: white;
+  font-family: 'Michroma', sans-serif;
+}
+
+body {
+  background-color: black;
+}
+
+body[class^='bgimage-'] {
+  background-size: 100%;
+  background-attachment: fixed;
+  height: 100%;
+  width: 100%;
+}
+
+.bgimage-1 {
+  background-image: url('../assets/bg1.gif');
+}
+
+.bgimage-2 {
+  background-image: url('../assets/bg2.gif');
+}
+
+.bgimage-3 {
+  background-image: url('../assets/bg3.gif');
+}
+
+.bgimage-4 {
+  background-image: url('../assets/bg4.gif');
+}
+
+.bgimage-5 {
+  background-image: url('../assets/bg5.gif');
 }
 
 ul {
@@ -14,6 +47,8 @@ li {
 h1 {
   margin: auto;
   text-align: center;
+  /* font-family: 'Rubik Mono One', sans-serif; */
+  font-family: 'Michroma', sans-serif;
 }
 
 content {
@@ -23,14 +58,18 @@ content {
   margin: auto;
 }
 
+#game-canvas {
+  border: 1px solid white;
+  background-color: black;
+}
+
 .main-creator-links {
   width: 20%;
 }
 
 .main-canvas {
-  min-width: 810px;
-  min-height: 510px;
-  background: blue;
+  min-width: 800px;
+  min-height: 500px;
 }
 
 .main-info {
