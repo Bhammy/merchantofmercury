@@ -1,0 +1,38 @@
+body, h1, content, section, ul, li, canvas, html {
+  margin: 0;
+  padding: 0;
+}
+
+ul {
+  list-style: none;
+}
+
+li {
+  margin-left: none:
+}
+
+h1 {
+  margin: auto;
+  text-align: center;
+}
+
+content {
+  display: flex;
+  flex-wrap: nowrap;
+  width: 1300px;
+  margin: auto;
+}
+
+.main-creator-links {
+  width: 20%;
+}
+
+.main-canvas {
+  min-width: 810px;
+  min-height: 510px;
+  background: blue;
+}
+
+.main-info {
+  width: 20%;
+}

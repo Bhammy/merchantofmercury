@@ -1,0 +1,23 @@
+{
+  "name": "merchantofmercury",
+  "version": "1.0.0",
+  "description": "### Background",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Bhammy/merchantofmercury.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Bhammy/merchantofmercury/issues"
+  },
+  "homepage": "https://github.com/Bhammy/merchantofmercury#readme",
+  "dependencies": {
+    "webpack": "^3.10.0"
+  }
+}
