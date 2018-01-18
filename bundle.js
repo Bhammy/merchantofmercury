@@ -70,8 +70,10 @@
 //note - use Firebase for auth - just key/value pairs - save as bonus feature
 const changeBackgroundImage = __webpack_require__(1);
 const Ship = __webpack_require__(2);
+const Asteroid = __webpack_require__(4);
+const objUtil = __webpack_require__(5);
 
-document.addEventListener("DOMContentLoaded", () => {
+window.addEventListener("load", () => {
   const canvas = document.getElementById('game-canvas');
   canvas.width = 800;
   canvas.height = 500;
@@ -89,7 +91,14 @@ document.addEventListener("DOMContentLoaded", () => {
   }, 10000), 10000);
 
   let ship = new Ship([40, 218], [0, 0]);
-  ship.draw(ctx);
+  ship.draw(ctx, ship.shipGraphic, ship.state);
+
+  let ast1 = new Asteroid(objUtil.randomAsteroidStartPos(), objUtil.randomAsteroidStartVel());
+  let ast2 = new Asteroid(objUtil.randomAsteroidStartPos(), objUtil.randomAsteroidStartVel());
+  let ast3 = new Asteroid(objUtil.randomAsteroidStartPos(), objUtil.randomAsteroidStartVel());
+  ast1.drawAndRotate(ctx, ast1.graphic, ast1.state);
+  ast2.drawAndRotate(ctx, ast2.graphic, ast2.state);
+  ast3.drawAndRotate(ctx, ast3.graphic, ast3.state);
 
 });
 
@@ -124,20 +133,16 @@ module.exports = class Ship extends MovingObject {
     });
     this.pos = pos;
     this.vel = vel;
-  }
-
-  draw(ctx) {
-    ctx.drawImage(
-      $("#spaceship-sprites")[0],
-      220, //sx (sourcex)
-      32, //s (sourcey)
-      40, //sWidth (sourceWidth)
-      46, //sHeight (sourceHeight)
-      this.pos[0], //dest pos x
-      this.pos[1], //dest pos y
-      40, //dest width
-      46 //dest height
-    );
+    this.shipGraphic = $("#sprites1")[0];
+    this.state = {
+      sx: 220,
+      sy: 32,
+      sWidth: 40,
+      sHeight: 46,
+      pos: this.pos,
+      dWidth: 40,
+      dHeight: 46,
+    };
   }
 
 };
@@ -159,7 +164,101 @@ module.exports = class MovingObject {
     this.pos[1] = this.pos[1] + this.vel[1];
   }
 
+  draw(ctx, graphic, state) {
+    ctx.drawImage(
+      graphic,
+      state.sx,
+      state.sy,
+      state.sWidth,
+      state.sHeight,
+      state.pos[0],
+      state.pos[1],
+      state.dWidth,
+      state.dHeight
+    );
+  }
+
+  drawAndRotate(ctx, graphic, state) {
+    ctx.save();
+    ctx.translate(state.pos[0], state.pos[1]);
+    ctx.translate(state.dWidth / 2, state.dHeight / 2);
+    ctx.rotate(state.rotation);
+    ctx.drawImage(
+      graphic,
+      state.sx,
+      state.sy,
+      state.sWidth,
+      state.sHeight,
+      -state.dWidth / 2,
+      -state.dHeight / 2,
+      state.dWidth,
+      state.dHeight
+    );
+    ctx.restore();
+  }
+
 };
+
+
+/***/ }),
+/* 4 */
+/***/ (function(module, exports, __webpack_require__) {
+
+const MovingObject  = __webpack_require__(3);
+
+const ASTEROID_DEFAULTS = {
+  sx: [0, 46],
+  sy: [0, 0],
+  sWidth: [46, 60],
+  sHeight: [53, 56],
+  dWidth: [46, 60],
+  dHeight: [53, 56],
+};
+
+module.exports = class Asteroid extends MovingObject {
+
+  constructor(pos, vel) {
+    super({
+      pos: pos,
+      vel: vel,
+    });
+    this.pos = pos;
+    this.vel = vel;
+    this.graphic = $("#sprites1")[0];
+    let randAsteroidNum = Math.round(Math.random());
+    this.state = {
+      sx: ASTEROID_DEFAULTS.sx[randAsteroidNum],
+      sy: ASTEROID_DEFAULTS.sy[randAsteroidNum],
+      sWidth: ASTEROID_DEFAULTS.sWidth[randAsteroidNum],
+      sHeight: ASTEROID_DEFAULTS.sHeight[randAsteroidNum],
+      pos: this.pos,
+      dWidth: ASTEROID_DEFAULTS.dWidth[randAsteroidNum],
+      dHeight: ASTEROID_DEFAULTS.dHeight[randAsteroidNum],
+      rotation: Math.floor(Math.random() * 360) * Math.PI / 180,
+    };
+  }
+
+};
+
+
+/***/ }),
+/* 5 */
+/***/ (function(module, exports) {
+
+const objUtil = {
+
+    randomAsteroidStartPos: () => {
+      // returns startPos off right, w/in canvas bounds
+      return [710, (Math.random() * (460) + 20)];
+    },
+
+    randomAsteroidStartVel: () => {
+      // returns randomVel, headed straight left
+      return [-3, 0];
+    }
+};
+
+module.exports = objUtil;
 
 
 /***/ })
