@@ -94,7 +94,7 @@ window.addEventListener("load", () => {
 
   window.setInterval(() => {
     gameLoop(ctx, game);
-  }, 20);
+  }, 30);
 
 });
 
@@ -143,7 +143,9 @@ module.exports = class Game {
 
 /***/ }),
 /* 3 */
-/***/ (function(module, exports) {
+/***/ (function(module, exports, __webpack_require__) {
+
+const objUtil = __webpack_require__(6);
 
 module.exports = class MovingObject {
   constructor(options) {
@@ -180,7 +182,18 @@ module.exports = class MovingObject {
     if (pos[1] < -50) {
       returnPos[1] = pos[1] +  560;
     }
+    if (pos[1] > 550) {
+      returnPos[1] = pos[1] - 560;
+      returnPos[0] = pos[0] - 30;
+    }
     return returnPos;
+  }
+
+  checkForCollision(otherObject) {
+    let thisObjectCenter = [this.state.pos[0] + this.state.dWidth/2, this.state.pos[1] + this.dHeight/2];
+    let otherObjectCenter = [otherObject.pos[0] + otherObject.state.dWidth/2, otherObject.pos[1] + otherObject.dHeight/2];
+    let centerDistances = objUtil.dist(this.state.pos, otherObject.state.pos);
+    return (centerDistances < (this.state.radius + otherObject.state.radius));
   }
 
 };
@@ -209,6 +222,7 @@ module.exports = class Ship extends MovingObject {
       pos: this.pos,
       dWidth: 40,
       dHeight: 46,
+      radius: 23,
     };
   }
 
@@ -253,6 +267,11 @@ module.exports = class Asteroid extends MovingObject {
       rotation: (Math.random() * [-1, 1][Math.round(Math.random())]),
       rotateDir: (0.01 * [-1, 1][Math.round(Math.random())]),
     };
+    if (this.state.dWidth > this.state.dHeight) {
+      this.state.radius = this.state.dWidth / 2;
+    } else {
+      this.state.radius = this.state.dHeight / 2;
+    }
   }
 
   move(ctx) {
@@ -300,6 +319,10 @@ const objUtil = {
     randomAsteroidStartVel: () => {
       // returns randomVel, headed leftish
       return [-(Math.random() * 3.5), (Math.random() * [-1, 1][Math.round(Math.random())]) ];
+    },
+
+    dist: (pos1, pos2) => {
+      return Math.sqrt( Math.pow(pos1[0] - pos2[0], 2) + Math.pow(pos1[1] - pos2[1], 2));
     }
 };
 
@@ -322,6 +345,11 @@ const gameLoop = (ctx, game) => {
       obj.move(ctx);
     } else if (obj instanceof Ship) {
       obj.move(ctx, obj.shipGraphic, obj.state);
+      game.objects.forEach( (checkObj) => {
+        if (checkObj instanceof Asteroid) {
+          obj.checkForCollision(checkObj);
+        }
+      });
     }
   });
 };
