@@ -172,6 +172,17 @@ module.exports = class MovingObject {
     );
   }
 
+  checkBounds(pos) {
+    let returnPos = pos;
+    if (pos[0] < -50) {
+      returnPos[0] = pos[0] + 860;
+    }
+    if (pos[1] < -50) {
+      returnPos[1] = pos[1] +  560;
+    }
+    return returnPos;
+  }
+
 };
 
 
@@ -248,6 +259,7 @@ module.exports = class Asteroid extends MovingObject {
     this.state.pos[0] = this.state.pos[0] + this.state.vel[0];
     this.state.pos[1] = this.state.pos[1] + this.state.vel[1];
     this.drawAndRotate(ctx, this.graphic, this.state);
+    this.state.pos = this.checkBounds(this.state.pos);
   }
 
   drawAndRotate(ctx) {
@@ -282,12 +294,12 @@ const objUtil = {
 
     randomAsteroidStartPos: () => {
       // returns startPos off right, w/in canvas bounds
-      return [710, (Math.random() * (460) + 20)];
+      return [810, (Math.random() * (460) + 20)];
     },
 
     randomAsteroidStartVel: () => {
-      // returns randomVel, headed leftish left
-      return [-(Math.random() * (4 - 0.5) + 0.5), -(Math.random() * [-1, 1][Math.round(Math.random())]) ];
+      // returns randomVel, headed leftish
+      return [-(Math.random() * 3.5), (Math.random() * [-1, 1][Math.round(Math.random())]) ];
     }
 };
 
@@ -303,7 +315,6 @@ const Asteroid = __webpack_require__(5);
 const objUtil = __webpack_require__(6);
 
 const gameLoop = (ctx, game) => {
-  console.log('drawing!');
   ctx.clearRect(0, 0, 800, 500);
   ctx.fill();
   game.objects.forEach( (obj) => {
