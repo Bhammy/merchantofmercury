@@ -19,7 +19,7 @@ document.addEventListener("DOMContentLoaded", () => {
     bgNum = nextNum;
   }, 10000), 10000);
 
-  let ship = new Ship([100, 100], [0, 0]);
+  let ship = new Ship([40, 218], [0, 0]);
   ship.draw(ctx);
 
 });

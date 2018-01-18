@@ -88,7 +88,7 @@ document.addEventListener("DOMContentLoaded", () => {
     bgNum = nextNum;
   }, 10000), 10000);
 
-  let ship = new Ship([100, 100], [0, 0]);
+  let ship = new Ship([40, 218], [0, 0]);
   ship.draw(ctx);
 
 });
@@ -122,11 +122,23 @@ module.exports = class Ship extends MovingObject {
       pos: pos,
       vel: vel,
     });
-    this.ship = new Image();
-    this.ship.src = 'assets/shipsprite.png';
-    this.graphic = this.ship;
+    this.pos = pos;
+    this.vel = vel;
   }
 
+  draw(ctx) {
+    ctx.drawImage(
+      $("#spaceship-sprites")[0],
+      220, //sx (sourcex)
+      32, //s (sourcey)
+      40, //sWidth (sourceWidth)
+      46, //sHeight (sourceHeight)
+      this.pos[0], //dest pos x
+      this.pos[1], //dest pos y
+      40, //dest width
+      46 //dest height
+    );
+  }
 
 };
 
@@ -145,10 +157,6 @@ module.exports = class MovingObject {
   move() {
     this.pos[0] = this.pos[0] + this.vel[0];
     this.pos[1] = this.pos[1] + this.vel[1];
-  }
-
-  draw(ctx) {
-    ctx.drawImage(this.graphic, this.pos[0], this.pos[1]);
   }
 
 };
