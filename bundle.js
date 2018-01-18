@@ -69,9 +69,10 @@
 
 //note - use Firebase for auth - just key/value pairs - save as bonus feature
 const changeBackgroundImage = __webpack_require__(1);
+const Ship = __webpack_require__(2);
 
 document.addEventListener("DOMContentLoaded", () => {
-  const canvas = $('#game-canvas')[0];
+  const canvas = document.getElementById('game-canvas');
   canvas.width = 800;
   canvas.height = 500;
 
@@ -85,9 +86,10 @@ document.addEventListener("DOMContentLoaded", () => {
   setTimeout(setInterval( () => {
     let nextNum = changeBackgroundImage(bgNum);
     bgNum = nextNum;
-  }, 15000), 15000);
+  }, 10000), 10000);
 
-  
+  let ship = new Ship([100, 100], [0, 0]);
+  ship.draw(ctx);
 
 });
 
@@ -97,7 +99,6 @@ document.addEventListener("DOMContentLoaded", () => {
 /***/ (function(module, exports) {
 
 const changeBackgroundImage = (num) => {
-  console.log('changing background!');
   let nextNum = num + 1;
   if (nextNum > 7) {
     nextNum = 1;
@@ -107,6 +108,50 @@ const changeBackgroundImage = (num) => {
 };
 
 module.exports = changeBackgroundImage;
+
+
+/***/ }),
+/* 2 */
+/***/ (function(module, exports, __webpack_require__) {
+
+const MovingObject = __webpack_require__(3);
+
+module.exports = class Ship extends MovingObject {
+  constructor(pos, vel) {
+    super({
+      pos: pos,
+      vel: vel,
+    });
+    this.ship = new Image();
+    this.ship.src = 'assets/shipsprite.png';
+    this.graphic = this.ship;
+  }
+
+
+};
+
+
+/***/ }),
+/* 3 */
+/***/ (function(module, exports) {
+
+module.exports = class MovingObject {
+  constructor(options) {
+    this.pos = options.pos;
+    this.vel = options.vel;
+    this.graphic = options.graphic;
+  }
+
+  move() {
+    this.pos[0] = this.pos[0] + this.vel[0];
+    this.pos[1] = this.pos[1] + this.vel[1];
+  }
+
+  draw(ctx) {
+    ctx.drawImage(this.graphic, this.pos[0], this.pos[1]);
+  }
+
+};
 
 
 /***/ })

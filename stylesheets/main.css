@@ -49,11 +49,12 @@ ul {
 }
 
 li {
-  margin-left: none:
+  margin: 10px;
 }
 
 h1 {
   margin: auto;
+  padding: 20px;
   text-align: center;
   /* font-family: 'Rubik Mono One', sans-serif; */
   font-family: 'Michroma', sans-serif;
@@ -76,6 +77,18 @@ content {
   border-radius: 4px;
 }
 
+.main-creator-links ul {
+  display: flex;
+  flex-wrap: wrap;
+  align-content: space-around;
+  height: 100%;
+}
+
+.main-creator-links li {
+  width: 100%;
+  text-align: center;
+}
+
 .main-canvas {
   min-width: 800px;
   min-height: 500px;
@@ -85,4 +98,20 @@ content {
   width: 20%;
   background-color: rgba(0, 0, 0, 0.4);
   border-radius: 4px;
+  font-size: 14px;
+  display: flex;
+  flex-wrap: wrap;
+  align-content: space-around;
+}
+
+.main-info hr {
+  width: 80%;
+}
+
+.main-info li {
+  margin: 20px 10px;
+}
+
+.sprites {
+  display: none;
 }

@@ -26,3 +26,5 @@ Using native JavaScript and HTML5 features, players can:
   * Day 2: Create game in basic but playable shape (i.e. instead of sprites, use canvas shapes)
   * Day 3: Finish game & style
   * Day 4: Finish styling
+
+Player ship and spaceport sprite credits go to MillionthVector at: http://millionthvector.blogspot.com/p/free-sprites.html

@@ -1,8 +1,9 @@
 //note - use Firebase for auth - just key/value pairs - save as bonus feature
-const changeBackgroundImage = require('./background.js');
+const changeBackgroundImage = require('./background');
+const Ship = require('./lib/ship');
 
 document.addEventListener("DOMContentLoaded", () => {
-  const canvas = $('#game-canvas')[0];
+  const canvas = document.getElementById('game-canvas');
   canvas.width = 800;
   canvas.height = 500;
 
@@ -16,8 +17,9 @@ document.addEventListener("DOMContentLoaded", () => {
   setTimeout(setInterval( () => {
     let nextNum = changeBackgroundImage(bgNum);
     bgNum = nextNum;
-  }, 15000), 15000);
+  }, 10000), 10000);
 
-  
+  let ship = new Ship([100, 100], [0, 0]);
+  ship.draw(ctx);
 
 });

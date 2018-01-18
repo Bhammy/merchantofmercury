@@ -1,5 +1,4 @@
 const changeBackgroundImage = (num) => {
-  console.log('changing background!');
   let nextNum = num + 1;
   if (nextNum > 7) {
     nextNum = 1;
