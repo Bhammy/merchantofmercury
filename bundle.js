@@ -69,9 +69,8 @@
 
 //note - use Firebase for auth - just key/value pairs - save as bonus feature
 const changeBackgroundImage = __webpack_require__(1);
-const Ship = __webpack_require__(2);
-const Asteroid = __webpack_require__(4);
-const objUtil = __webpack_require__(5);
+const Game = __webpack_require__(2);
+const gameLoop = __webpack_require__(7);
 
 window.addEventListener("load", () => {
   const canvas = document.getElementById('game-canvas');
@@ -90,15 +89,12 @@ window.addEventListener("load", () => {
     bgNum = nextNum;
   }, 10000), 10000);
 
-  let ship = new Ship([40, 218], [0, 0]);
-  ship.draw(ctx, ship.shipGraphic, ship.state);
 
-  let ast1 = new Asteroid(objUtil.randomAsteroidStartPos(), objUtil.randomAsteroidStartVel());
-  let ast2 = new Asteroid(objUtil.randomAsteroidStartPos(), objUtil.randomAsteroidStartVel());
-  let ast3 = new Asteroid(objUtil.randomAsteroidStartPos(), objUtil.randomAsteroidStartVel());
-  ast1.drawAndRotate(ctx, ast1.graphic, ast1.state);
-  ast2.drawAndRotate(ctx, ast2.graphic, ast2.state);
-  ast3.drawAndRotate(ctx, ast3.graphic, ast3.state);
+  let game = new Game(ctx, 8);
+
+  window.setInterval(() => {
+    gameLoop(ctx, game);
+  }, 20);
 
 });
 
@@ -121,6 +117,66 @@ module.exports = changeBackgroundImage;
 
 /***/ }),
 /* 2 */
+/***/ (function(module, exports, __webpack_require__) {
+
+const Ship = __webpack_require__(4);
+const Asteroid = __webpack_require__(5);
+const objUtil = __webpack_require__(6);
+
+module.exports = class Game {
+
+  constructor(ctx, numAsteroids) {
+    //save room for numPirates
+    this.ctx = ctx;
+    this.objects = [
+      new Ship([40, 218], [0, 0]),
+    ];
+    for (var i = 1; i <= numAsteroids; i++) {
+      this.objects.push( new Asteroid(objUtil.randomAsteroidStartPos(), objUtil.randomAsteroidStartVel()) );
+    }
+  }
+
+
+
+};
+
+
+/***/ }),
+/* 3 */
+/***/ (function(module, exports) {
+
+module.exports = class MovingObject {
+  constructor(options) {
+    this.pos = options.pos;
+    this.vel = options.vel;
+    this.graphic = options.graphic;
+  }
+
+  move(ctx, graphic, state) {
+    this.pos[0] = this.pos[0] + this.vel[0];
+    this.pos[1] = this.pos[1] + this.vel[1];
+    this.draw(ctx, graphic, state);
+  }
+
+  draw(ctx, graphic, state) {
+    ctx.drawImage(
+      graphic,
+      state.sx,
+      state.sy,
+      state.sWidth,
+      state.sHeight,
+      state.pos[0],
+      state.pos[1],
+      state.dWidth,
+      state.dHeight
+    );
+  }
+
+};
+
+
+/***/ }),
+/* 4 */
 /***/ (function(module, exports, __webpack_require__) {
 
 const MovingObject = __webpack_require__(3);
@@ -149,59 +205,7 @@ module.exports = class Ship extends MovingObject {
 
 
 /***/ }),
-/* 3 */
-/***/ (function(module, exports) {
-
-module.exports = class MovingObject {
-  constructor(options) {
-    this.pos = options.pos;
-    this.vel = options.vel;
-    this.graphic = options.graphic;
-  }
-
-  move() {
-    this.pos[0] = this.pos[0] + this.vel[0];
-    this.pos[1] = this.pos[1] + this.vel[1];
-  }
-
-  draw(ctx, graphic, state) {
-    ctx.drawImage(
-      graphic,
-      state.sx,
-      state.sy,
-      state.sWidth,
-      state.sHeight,
-      state.pos[0],
-      state.pos[1],
-      state.dWidth,
-      state.dHeight
-    );
-  }
-
-  drawAndRotate(ctx, graphic, state) {
-    ctx.save();
-    ctx.translate(state.pos[0], state.pos[1]);
-    ctx.translate(state.dWidth / 2, state.dHeight / 2);
-    ctx.rotate(state.rotation);
-    ctx.drawImage(
-      graphic,
-      state.sx,
-      state.sy,
-      state.sWidth,
-      state.sHeight,
-      -state.dWidth / 2,
-      -state.dHeight / 2,
-      state.dWidth,
-      state.dHeight
-    );
-    ctx.restore();
-  }
-
-};
-
-
-/***/ }),
-/* 4 */
+/* 5 */
 /***/ (function(module, exports, __webpack_require__) {
 
 const MovingObject  = __webpack_require__(3);
@@ -232,17 +236,46 @@ module.exports = class Asteroid extends MovingObject {
       sWidth: ASTEROID_DEFAULTS.sWidth[randAsteroidNum],
       sHeight: ASTEROID_DEFAULTS.sHeight[randAsteroidNum],
       pos: this.pos,
+      vel: this.vel,
       dWidth: ASTEROID_DEFAULTS.dWidth[randAsteroidNum],
       dHeight: ASTEROID_DEFAULTS.dHeight[randAsteroidNum],
-      rotation: Math.floor(Math.random() * 360) * Math.PI / 180,
+      rotation: (Math.random() * [-1, 1][Math.round(Math.random())]),
+      rotateDir: (0.01 * [-1, 1][Math.round(Math.random())]),
     };
   }
+
+  move(ctx) {
+    this.state.pos[0] = this.state.pos[0] + this.state.vel[0];
+    this.state.pos[1] = this.state.pos[1] + this.state.vel[1];
+    this.drawAndRotate(ctx, this.graphic, this.state);
+  }
+
+  drawAndRotate(ctx) {
+    ctx.save();
+    ctx.translate(this.state.pos[0], this.state.pos[1]);
+    ctx.translate(this.state.dWidth / 2, this.state.dHeight / 2);
+    ctx.rotate(this.state.rotation);
+    this.state.rotation += this.state.rotateDir;
+    ctx.drawImage(
+      this.graphic,
+      this.state.sx,
+      this.state.sy,
+      this.state.sWidth,
+      this.state.sHeight,
+      -this.state.dWidth / 2,
+      -this.state.dHeight / 2,
+      this.state.dWidth,
+      this.state.dHeight
+    );
+    ctx.restore();
+  }
+
 
 };
 
 
 /***/ }),
-/* 5 */
+/* 6 */
 /***/ (function(module, exports) {
 
 const objUtil = {
@@ -253,12 +286,36 @@ const objUtil = {
     },
 
     randomAsteroidStartVel: () => {
-      // returns randomVel, headed straight left
-      return [-3, 0];
+      // returns randomVel, headed leftish left
+      return [-(Math.random() * (4 - 0.5) + 0.5), -(Math.random() * [-1, 1][Math.round(Math.random())]) ];
     }
 };
 
 module.exports = objUtil;
+
+
+/***/ }),
+/* 7 */
+/***/ (function(module, exports, __webpack_require__) {
+
+const Ship = __webpack_require__(4);
+const Asteroid = __webpack_require__(5);
+const objUtil = __webpack_require__(6);
+
+const gameLoop = (ctx, game) => {
+  console.log('drawing!');
+  ctx.clearRect(0, 0, 800, 500);
+  ctx.fill();
+  game.objects.forEach( (obj) => {
+    if (obj instanceof Asteroid) {
+      obj.move(ctx);
+    } else if (obj instanceof Ship) {
+      obj.move(ctx, obj.shipGraphic, obj.state);
+    }
+  });
+};
+
+module.exports = gameLoop;
 
 
 /***/ })

@@ -3,7 +3,7 @@ var webpack = require('webpack');
 
 var config = {
   context: __dirname, //refers to the root of the project folder
-  entry: './game.js', //imports fro,
+  entry: './play.js', //imports fro,
   output: {
     filename: 'bundle.js',
   },
