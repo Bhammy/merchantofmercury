@@ -21,7 +21,7 @@ window.addEventListener("load", () => {
   }, 10000), 10000);
 
 
-  let game = new Game(ctx, 8);
+  let game = new Game(ctx, 20);
 
   window.setInterval(() => {
     gameLoop(ctx, game);

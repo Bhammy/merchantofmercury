@@ -90,7 +90,7 @@ window.addEventListener("load", () => {
   }, 10000), 10000);
 
 
-  let game = new Game(ctx, 8);
+  let game = new Game(ctx, 20);
 
   window.setInterval(() => {
     gameLoop(ctx, game);
@@ -331,6 +331,8 @@ module.exports = class Ship extends MovingObject {
       dWidth: 40,
       dHeight: 46,
       radius: 23,
+      isDestructable: true,
+      health: 5,
     };
     this.bindKeyHandlers();
   }
@@ -359,12 +361,12 @@ module.exports = class Ship extends MovingObject {
     });
     key("space", (e) => {
       let bulletPos = [this.state.pos[0] + 28, this.state.pos[1] + 24];
-      let bullet = new ShipBullet(bulletPos);
+      let bullet = new ShipBullet(bulletPos, this.addObject);
       this.addObject(bullet);
     });
   }
 
-  checkBounds(state) {
+  checkOutOfBounds(state) {
     if ((state.pos[0] <= 10) || (state.pos[0] >= 750)) {
       if (state.pos[0] <= 10) {
         state.pos[0] = 10;
@@ -396,12 +398,13 @@ module.exports = class Ship extends MovingObject {
 const MovingObject  = __webpack_require__(3);
 
 const ASTEROID_DEFAULTS = {
-  sx: [0, 46],
-  sy: [0, 0],
-  sWidth: [46, 60],
-  sHeight: [53, 56],
-  dWidth: [46, 60],
-  dHeight: [53, 56],
+  sx: [0, 46, 0, 46, 7, 53, 10, 67],
+  sy: [0, 0, 0, 0, 62, 62, 92, 104],
+  sWidth: [46, 60, 46, 60, 26, 33, 23, 13],
+  sHeight: [53, 56, 53, 56, 18, 31, 23, 13],
+  dWidth: [46, 60, 46, 60, 26, 33, 23, 13],
+  dHeight: [53, 56, 53, 56, 18, 31, 23, 13],
+  health: [3, 3, 3, 3, 2, 2, 1, 1],
 };
 
 module.exports = class Asteroid extends MovingObject {
@@ -414,7 +417,7 @@ module.exports = class Asteroid extends MovingObject {
     this.pos = pos;
     this.vel = vel;
     this.graphic = $("#sprites1")[0];
-    let randAsteroidNum = Math.round(Math.random());
+    let randAsteroidNum = Math.round(Math.random() * 7);
     this.state = {
       sx: ASTEROID_DEFAULTS.sx[randAsteroidNum],
       sy: ASTEROID_DEFAULTS.sy[randAsteroidNum],
@@ -426,6 +429,8 @@ module.exports = class Asteroid extends MovingObject {
       dHeight: ASTEROID_DEFAULTS.dHeight[randAsteroidNum],
       rotation: (Math.random() * [-1, 1][Math.round(Math.random())]),
       rotateDir: (0.01 * [-1, 1][Math.round(Math.random())]),
+      isDestructable: true,
+      health: ASTEROID_DEFAULTS.health[randAsteroidNum],
     };
     if (this.state.dWidth > this.state.dHeight) {
       this.state.radius = this.state.dWidth / 2;
@@ -511,19 +516,21 @@ module.exports = objUtil;
 const Ship = __webpack_require__(4);
 const Asteroid = __webpack_require__(5);
 const ShipBullet = __webpack_require__(9);
+const Explosion = __webpack_require__(10);
 const objUtil = __webpack_require__(6);
 
 const gameLoop = (ctx, game) => {
 
   ctx.clearRect(0, 0, 800, 500);
-  ctx.fill();
+  ctx.fillRect(0, 0, 800, 500);
+  // ctx.fill();
 
   game.objects.forEach( (obj) => {
     if (obj instanceof Asteroid) {
       obj.move(ctx);
     } else if (obj instanceof Ship) {
       obj.move(ctx, obj.shipGraphic, obj.state);
-      obj.state = obj.checkBounds(obj.state);
+      obj.state = obj.checkOutOfBounds(obj.state);
       obj.draw(ctx, obj.shipGraphic, obj.state);
       game.objects.forEach( (checkObj) => {
         if (checkObj instanceof Asteroid) {
@@ -535,19 +542,23 @@ const gameLoop = (ctx, game) => {
       if (obj.checkOutOfBounds(obj.state.pos)) {
         game.removeObject(obj);
       } else {
-        game.objects.forEach( (otherObj) => {
-          if (otherObj instanceof Asteroid) {
-            if (obj.bulletHit(otherObj)) {
-              game.removeObject(obj);
-              game.removeObject(otherObj);
-              game.currentAsteroids -= 1;
-            }
-          } else {
-            obj.draw(ctx, obj.graphic, obj.state);
+        game.objects.forEach( (otherObject) => {
+          if (otherObject instanceof Asteroid) {
+            obj.handleBullet(otherObject);
           }
+            obj.draw(ctx, obj.graphic, obj.state);
         });
       }
+    } else if (obj instanceof Explosion) {
+      obj.draw(ctx);
     }
+    if (obj.state.isDestructable && (obj.state.health < 1)) {
+      game.removeObject(obj);
+      if (obj instanceof Asteroid) {
+        game.currentAsteroids -= 1;
+      }
+    }
+
   });
 
   gameTick(ctx, game);
@@ -571,13 +582,15 @@ module.exports = gameLoop;
 /***/ (function(module, exports, __webpack_require__) {
 
 const MovingObject = __webpack_require__(3);
+const Explosion = __webpack_require__(10);
 
 module.exports = class ShipBullet extends MovingObject {
-  constructor(pos) {
+  constructor(pos, addObject) {
     super({
       pos: pos,
       vel: [12, 0],
     });
+    this.addObject = addObject;
     this.graphic = $("#sprites1")[0];
     this.state = {
       sx: 200,
@@ -589,16 +602,71 @@ module.exports = class ShipBullet extends MovingObject {
       dWidth: 14,
       dHeight: 4,
       radius: 2,
+      health: 1,
+      isDestructable: true,
     };
   }
 
-  bulletHit(otherObject) {
+  handleBullet(otherObject) {
     if (this.checkForCollision(otherObject)) {
+      if (otherObject.state.isDestructable) {
+        otherObject.state.health -= 1;
+        this.state.health -= 1;
+        this.addObject( new Explosion(this.state.pos, otherObject.state.health));
+      }
       return true;
     }
     return false;
   }
 
+};
+
+
+/***/ }),
+/* 10 */
+/***/ (function(module, exports) {
+
+const EXPLOSION_TYPES = {
+  0: {
+    outline: 'red',
+    blur: 'orange',
+  },
+
+  1: {
+    outline: 'red',
+    blur: 'yellow',
+  }
+};
+
+module.exports = class Explosion {
+  constructor(pos, health) {
+    this.state = {
+      pos: pos,
+      isDestructable: true,
+      explosionSize: 3 - health,
+      explosionType: Math.round(Math.random() * 1),
+    };
+    this.state.health = 30 - (this.state.explosionSize * 10);
+  }
+
+  draw(ctx) {
+    ctx.beginPath();
+    ctx.arc(this.state.pos[0],
+      this.state.pos[1],
+      Math.abs((this.state.explosionSize)),
+      0,
+      2 * Math.PI,
+      false
+    );
+    ctx.lineWidth = 3;
+    ctx.strokeStyle = EXPLOSION_TYPES[this.state.explosionType].outline;
+    ctx.shadowColor = EXPLOSION_TYPES[this.state.explosionType].blur;
+    ctx.shadowBlur = 20;
+    ctx.stroke();
+    ctx.shadowBlur = 0;
+    this.state.explosionSize -= 1;
+    this.state.health -= 1;
+  }
 };
 
 
