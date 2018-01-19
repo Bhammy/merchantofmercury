@@ -138,6 +138,12 @@ module.exports = class Game {
       this.objects.push( new Asteroid(objUtil.randomAsteroidStartPos(), objUtil.randomAsteroidStartVel()) );
       this.currentAsteroids += 1;
     }
+    key("r", () => {
+      if (!this.objects.some( (obj) => obj instanceof Ship)) {
+        let ship = new Ship([40, 218], [0, 0], this.addObject);
+        this.objects.push(ship);
+      }
+    });
   }
 
   addObject(object) {
@@ -147,6 +153,8 @@ module.exports = class Game {
   removeObject(object) {
     this.objects.splice(this.objects.indexOf(object), 1);
   }
+
+
 
 
 };
@@ -215,6 +223,8 @@ module.exports = class MovingObject {
 
 const MovingObject = __webpack_require__(3);
 const ShipBullet = __webpack_require__(9);
+const Explosion = __webpack_require__(10);
+const objUtil = __webpack_require__(6);
 
 const SHIP_DIRECTIONS = {
   "up": [0, -5],
@@ -339,6 +349,7 @@ module.exports = class Ship extends MovingObject {
 
   bindKeyHandlers() {
     Object.keys(SHIP_DIRECTIONS).forEach( (dir) => {
+      $(document).unbind(dir);
       let move = SHIP_DIRECTIONS[dir];
       key(dir, (e) => {
         e.preventDefault();
@@ -360,9 +371,11 @@ module.exports = class Ship extends MovingObject {
       });
     });
     key("space", (e) => {
-      let bulletPos = [this.state.pos[0] + 28, this.state.pos[1] + 24];
-      let bullet = new ShipBullet(bulletPos, this.addObject);
-      this.addObject(bullet);
+      if (this.state.health > 0) {
+        let bulletPos = [this.state.pos[0] + 28, this.state.pos[1] + 24];
+        let bullet = new ShipBullet(bulletPos, this.addObject);
+        this.addObject(bullet);
+      }
     });
   }
 
@@ -386,6 +399,15 @@ module.exports = class Ship extends MovingObject {
       }
     }
     return state;
+  }
+
+  shipWasHit(otherObject) {
+    for (var i = this.state.health; i > (this.state.health - 2) ; i--) {
+      let pos = [this.state.pos[0] + objUtil.randSmall(), this.state.pos[1] + objUtil.randSmall()];
+      this.addObject(new Explosion(pos, this.state.health, 2));
+    }
+    this.state.health -= 1;
+    otherObject.state.health -=1;
   }
 
 };
@@ -498,11 +520,15 @@ const objUtil = {
 
     randomAsteroidStartVel: () => {
       // returns randomVel, headed leftish
-      return [-(Math.random() * 3.5), (Math.random() * [-1, 1][Math.round(Math.random())]) ];
+      return [-(Math.random() * 5), (Math.random() * [-1, 1][Math.round(Math.random())]) ];
     },
 
     dist: (pos1, pos2) => {
       return Math.sqrt( Math.pow(pos1[0] - pos2[0], 2) + Math.pow(pos1[1] - pos2[1], 2));
+    },
+
+    randSmall: () => {
+      return (Math.round(Math.random() * 3) * ([-1, 1][Math.round(Math.random())]));
     }
 };
 
@@ -534,7 +560,9 @@ const gameLoop = (ctx, game) => {
       obj.draw(ctx, obj.shipGraphic, obj.state);
       game.objects.forEach( (checkObj) => {
         if (checkObj instanceof Asteroid) {
-          obj.checkForCollision(checkObj);
+          if (obj.checkForCollision(checkObj)) {
+            obj.shipWasHit(checkObj);
+          }
         }
       });
     } else if (obj instanceof ShipBullet) {
@@ -628,23 +656,30 @@ module.exports = class ShipBullet extends MovingObject {
 
 const EXPLOSION_TYPES = {
   0: {
-    outline: 'red',
+    outline: '#ff5000',
     blur: 'orange',
   },
 
   1: {
     outline: 'red',
     blur: 'yellow',
+  },
+
+  2: {
+    outline: 'green',
+    blur: '#0af4fc',
   }
+
 };
 
 module.exports = class Explosion {
-  constructor(pos, health) {
+  constructor(pos, health, type) {
     this.state = {
       pos: pos,
       isDestructable: true,
       explosionSize: 3 - health,
-      explosionType: Math.round(Math.random() * 1),
+      explosionType: (type || Math.round(Math.random() * 1)),
+      globalAlpha: 0.9,
     };
     this.state.health = 30 - (this.state.explosionSize * 10);
   }
@@ -662,9 +697,12 @@ module.exports = class Explosion {
     ctx.strokeStyle = EXPLOSION_TYPES[this.state.explosionType].outline;
     ctx.shadowColor = EXPLOSION_TYPES[this.state.explosionType].blur;
     ctx.shadowBlur = 20;
+    ctx.globalAlpha = this.state.globalAlpha;
     ctx.stroke();
     ctx.shadowBlur = 0;
+    ctx.globalAlpha = 1;
     this.state.explosionSize -= 1;
+    this.state.globalAlpha -= 0.02;
     this.state.health -= 1;
   }
 };
