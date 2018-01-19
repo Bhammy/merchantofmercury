@@ -94,7 +94,7 @@ window.addEventListener("load", () => {
 
   window.setInterval(() => {
     gameLoop(ctx, game);
-  }, 25);
+  }, 30);
 
 });
 
@@ -134,6 +134,7 @@ module.exports = class Game {
     this.objects = [
       new Ship([40, 218], [0, 0], this.addObject),
     ];
+    this.gameOver = false;
     for (var i = 1; i <= numAsteroids; i++) {
       this.objects.push( new Asteroid(objUtil.randomAsteroidStartPos(), objUtil.randomAsteroidStartVel()) );
       this.currentAsteroids += 1;
@@ -142,6 +143,8 @@ module.exports = class Game {
       if (!this.objects.some( (obj) => obj instanceof Ship)) {
         let ship = new Ship([40, 218], [0, 0], this.addObject);
         this.objects.push(ship);
+        this.gameOver = false;
+        $(".game-over").addClass("hidden");
       }
     });
   }
@@ -403,7 +406,7 @@ module.exports = class Ship extends MovingObject {
 
   shipWasHit(otherObject) {
     for (var i = this.state.health; i > (this.state.health - 2) ; i--) {
-      let pos = [this.state.pos[0] + objUtil.randSmall(), this.state.pos[1] + objUtil.randSmall()];
+      let pos = [this.state.pos[0] + objUtil.randSmall() + 15, this.state.pos[1] + objUtil.randSmall() + 15];
       this.addObject(new Explosion(pos, this.state.health, 2));
     }
     this.state.health -= 1;
@@ -562,6 +565,9 @@ const gameLoop = (ctx, game) => {
         if (checkObj instanceof Asteroid) {
           if (obj.checkForCollision(checkObj)) {
             obj.shipWasHit(checkObj);
+            if (obj.state.health === 0) {
+              game.gameOver = true;
+            }
           }
         }
       });
@@ -595,6 +601,9 @@ const gameLoop = (ctx, game) => {
 
 const gameTick = (ctx, game) => {
   //reserve this for events that happen over more than one frame
+  if (game.gameOver) {
+    $(".game-over").removeClass("hidden");
+  }
   if (game.currentAsteroids < game.numAsteroids) {
     game.objects.push(new Asteroid(objUtil.randomAsteroidStartPos(), objUtil.randomAsteroidStartVel()));
     game.currentAsteroids += 1;

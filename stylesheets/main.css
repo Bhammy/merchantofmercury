@@ -3,6 +3,7 @@ body, h1, content, section, ul, li, canvas, html {
   padding: 0;
   color: white;
   font-family: 'Michroma', sans-serif;
+  text-shadow: 0px 0px 10px #ff0000;
 }
 
 body {
@@ -92,6 +93,7 @@ content {
 .main-canvas {
   min-width: 800px;
   min-height: 500px;
+  position: relative;
 }
 
 .main-info {
@@ -114,4 +116,47 @@ content {
 
 .sprites {
   display: none;
+}
+
+.game-over {
+  position: absolute;
+  display: flex;
+  flex-wrap: wrap;
+  top: 0;
+  left: 0;
+  width: 800px;
+  height: 500px;
+  align-content: center;
+  background-color: rgba(0, 0, 0, 0.6);
+}
+
+.game-over h1, p {
+  visibility: visible;
+  animation-duration: 1s;
+  animation-name: blink;
+  animation-iteration-count: infinite;
+  animation-direction: alternate;
+}
+
+.game-over h1 {
+  width: 100%;
+  margin: 10px;
+}
+
+.game-over p {
+  margin: auto;
+}
+
+.hidden {
+  display: none;
+}
+
+@keyframes blink {
+  from {
+    color: rgba(255, 0, 0, 0.7);
+  }
+
+  to {
+    color: rgba(255, 255, 255, 1);
+  }
 }
