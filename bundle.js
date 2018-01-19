@@ -94,7 +94,7 @@ window.addEventListener("load", () => {
 
   window.setInterval(() => {
     gameLoop(ctx, game);
-  }, 30);
+  }, 25);
 
 });
 
@@ -127,6 +127,8 @@ module.exports = class Game {
 
   constructor(ctx, numAsteroids) {
     //save room for numPirates
+    this.numAsteroids = numAsteroids;
+    this.currentAsteroids = 0;
     this.ctx = ctx;
     this.addObject = this.addObject.bind(this);
     this.objects = [
@@ -134,6 +136,7 @@ module.exports = class Game {
     ];
     for (var i = 1; i <= numAsteroids; i++) {
       this.objects.push( new Asteroid(objUtil.randomAsteroidStartPos(), objUtil.randomAsteroidStartVel()) );
+      this.currentAsteroids += 1;
     }
   }
 
@@ -211,13 +214,17 @@ module.exports = class MovingObject {
 /***/ (function(module, exports, __webpack_require__) {
 
 const MovingObject = __webpack_require__(3);
-const Bullet = __webpack_require__(8);
+const ShipBullet = __webpack_require__(9);
 
 const SHIP_DIRECTIONS = {
   "up": [0, -5],
   "down": [0, 5],
   "left": [-5, 0],
   "right": [5, 0],
+  "w": [0, -5],
+  "s": [0, 5],
+  "a": [-5, 0],
+  "d": [5, 0],
 };
 
 const SHIP_SPRITES = {
@@ -348,12 +355,11 @@ module.exports = class Ship extends MovingObject {
         Object.keys(newSprite).forEach( (spriteVal) => {
           this.state[spriteVal] = newSprite[spriteVal];
         });
-        console.log(this.state.vel);
       });
     });
     key("space", (e) => {
       let bulletPos = [this.state.pos[0] + 28, this.state.pos[1] + 24];
-      let bullet = new Bullet(bulletPos);
+      let bullet = new ShipBullet(bulletPos);
       this.addObject(bullet);
     });
   }
@@ -504,7 +510,7 @@ module.exports = objUtil;
 
 const Ship = __webpack_require__(4);
 const Asteroid = __webpack_require__(5);
-const Bullet = __webpack_require__(8);
+const ShipBullet = __webpack_require__(9);
 const objUtil = __webpack_require__(6);
 
 const gameLoop = (ctx, game) => {
@@ -524,14 +530,23 @@ const gameLoop = (ctx, game) => {
           obj.checkForCollision(checkObj);
         }
       });
-    } else if (obj instanceof Bullet) {
+    } else if (obj instanceof ShipBullet) {
       obj.move(ctx, obj.graphic, obj.state);
       if (obj.checkOutOfBounds(obj.state.pos)) {
         game.removeObject(obj);
       } else {
-        obj.draw(ctx, obj.graphic, obj.state);
+        game.objects.forEach( (otherObj) => {
+          if (otherObj instanceof Asteroid) {
+            if (obj.bulletHit(otherObj)) {
+              game.removeObject(obj);
+              game.removeObject(otherObj);
+              game.currentAsteroids -= 1;
+            }
+          } else {
+            obj.draw(ctx, obj.graphic, obj.state);
+          }
+        });
       }
-      console.log(game.objects.length);
     }
   });
 
@@ -541,18 +556,23 @@ const gameLoop = (ctx, game) => {
 
 const gameTick = (ctx, game) => {
   //reserve this for events that happen over more than one frame
+  if (game.currentAsteroids < game.numAsteroids) {
+    game.objects.push(new Asteroid(objUtil.randomAsteroidStartPos(), objUtil.randomAsteroidStartVel()));
+    game.currentAsteroids += 1;
+  }
 };
 
 module.exports = gameLoop;
 
 
 /***/ }),
-/* 8 */
+/* 8 */,
+/* 9 */
 /***/ (function(module, exports, __webpack_require__) {
 
 const MovingObject = __webpack_require__(3);
 
-module.exports = class Bullet extends MovingObject {
+module.exports = class ShipBullet extends MovingObject {
   constructor(pos) {
     super({
       pos: pos,
@@ -568,8 +588,15 @@ module.exports = class Bullet extends MovingObject {
       vel: [12, 0],
       dWidth: 14,
       dHeight: 4,
-      radius: 4,
+      radius: 2,
     };
+  }
+
+  bulletHit(otherObject) {
+    if (this.checkForCollision(otherObject)) {
+      return true;
+    }
+    return false;
   }
 
 };
