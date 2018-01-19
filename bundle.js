@@ -128,14 +128,22 @@ module.exports = class Game {
   constructor(ctx, numAsteroids) {
     //save room for numPirates
     this.ctx = ctx;
+    this.addObject = this.addObject.bind(this);
     this.objects = [
-      new Ship([40, 218], [0, 0]),
+      new Ship([40, 218], [0, 0], this.addObject),
     ];
     for (var i = 1; i <= numAsteroids; i++) {
       this.objects.push( new Asteroid(objUtil.randomAsteroidStartPos(), objUtil.randomAsteroidStartVel()) );
     }
   }
 
+  addObject(object) {
+    this.objects.push(object);
+  }
+
+  removeObject(object) {
+    this.objects.splice(this.objects.indexOf(object), 1);
+  }
 
 
 };
@@ -172,19 +180,20 @@ module.exports = class MovingObject {
     );
   }
 
-  checkBounds(pos) {
-    let returnPos = pos;
+  checkOutOfBounds(pos) {
     if (pos[0] < -50) {
-      returnPos[0] = pos[0] + 860;
+      return true;
+    }
+    if (pos[0] > 800) {
+      return true;
     }
     if (pos[1] < -50) {
-      returnPos[1] = pos[1] +  560;
+      return true;
     }
     if (pos[1] > 550) {
-      returnPos[1] = pos[1] - 560;
-      returnPos[0] = pos[0] - 30;
+      return true;
     }
-    return returnPos;
+    return false;
   }
 
   checkForCollision(otherObject) {
@@ -202,6 +211,7 @@ module.exports = class MovingObject {
 /***/ (function(module, exports, __webpack_require__) {
 
 const MovingObject = __webpack_require__(3);
+const Bullet = __webpack_require__(8);
 
 const SHIP_DIRECTIONS = {
   "up": [0, -5],
@@ -296,12 +306,13 @@ const SHIP_SPRITES = {
 
 module.exports = class Ship extends MovingObject {
 
-  constructor(pos, vel) {
+  constructor(pos, vel, addObject, removeObject) {
     super({
       pos: pos,
       vel: vel,
       graphic: $("#sprites1")[0],
     });
+    this.addObject = addObject;
     this.shipGraphic = $("#sprites1")[0];
     this.state = {
       sx: 220,
@@ -341,7 +352,9 @@ module.exports = class Ship extends MovingObject {
       });
     });
     key("space", (e) => {
-      //create bullet
+      let bulletPos = [this.state.pos[0] + 28, this.state.pos[1] + 24];
+      let bullet = new Bullet(bulletPos);
+      this.addObject(bullet);
     });
   }
 
@@ -419,7 +432,7 @@ module.exports = class Asteroid extends MovingObject {
     this.state.pos[0] = this.state.pos[0] + this.state.vel[0];
     this.state.pos[1] = this.state.pos[1] + this.state.vel[1];
     this.drawAndRotate(ctx, this.graphic, this.state);
-    this.state.pos = this.checkBounds(this.state.pos);
+    this.state.pos = this.boundaryWrap(this.state.pos);
   }
 
   drawAndRotate(ctx) {
@@ -440,6 +453,21 @@ module.exports = class Asteroid extends MovingObject {
       this.state.dHeight
     );
     ctx.restore();
+  }
+
+  boundaryWrap(pos) {
+    let returnPos = pos;
+    if (pos[0] < -50) {
+      returnPos[0] = pos[0] + 860;
+    }
+    if (pos[1] < -50) {
+      returnPos[1] = pos[1] +  560;
+    }
+    if (pos[1] > 550) {
+      returnPos[1] = pos[1] - 560;
+      returnPos[0] = pos[0] - 30;
+    }
+    return returnPos;
   }
 
 
@@ -476,6 +504,7 @@ module.exports = objUtil;
 
 const Ship = __webpack_require__(4);
 const Asteroid = __webpack_require__(5);
+const Bullet = __webpack_require__(8);
 const objUtil = __webpack_require__(6);
 
 const gameLoop = (ctx, game) => {
@@ -495,6 +524,14 @@ const gameLoop = (ctx, game) => {
           obj.checkForCollision(checkObj);
         }
       });
+    } else if (obj instanceof Bullet) {
+      obj.move(ctx, obj.graphic, obj.state);
+      if (obj.checkOutOfBounds(obj.state.pos)) {
+        game.removeObject(obj);
+      } else {
+        obj.draw(ctx, obj.graphic, obj.state);
+      }
+      console.log(game.objects.length);
     }
   });
 
@@ -507,6 +544,35 @@ const gameTick = (ctx, game) => {
 };
 
 module.exports = gameLoop;
+
+
+/***/ }),
+/* 8 */
+/***/ (function(module, exports, __webpack_require__) {
+
+const MovingObject = __webpack_require__(3);
+
+module.exports = class Bullet extends MovingObject {
+  constructor(pos) {
+    super({
+      pos: pos,
+      vel: [12, 0],
+    });
+    this.graphic = $("#sprites1")[0];
+    this.state = {
+      sx: 200,
+      sy: 8,
+      sWidth: 14,
+      sHeight: 4,
+      pos: pos,
+      vel: [12, 0],
+      dWidth: 14,
+      dHeight: 4,
+      radius: 4,
+    };
+  }
+
+};
 
 
 /***/ })
