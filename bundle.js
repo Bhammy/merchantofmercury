@@ -90,6 +90,7 @@ window.addEventListener("load", () => {
   }, 10000), 10000);
 
 
+  // let game = new Game(ctx, 20);
   let game = new Game(ctx, 20);
 
   window.setInterval(() => {
@@ -632,6 +633,7 @@ const gameLoop = (ctx, game) => {
       if (obj instanceof Asteroid) {
         game.score += obj.state.scoreValue;
         game.currentAsteroids -= 1;
+        game.numAsteroids += 0.1;
         $('.score').text(game.score);
       }
     }
