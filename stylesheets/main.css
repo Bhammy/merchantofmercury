@@ -151,6 +151,25 @@ content {
   display: none;
 }
 
+.game-score {
+  position: absolute;
+  top: 98%;
+  width: 100%;
+  display: flex;
+  background-color: rgba(0, 0, 0, 1.0);
+  border: 1px solid rgba(255, 255, 255, 1.0);
+  border-radius: 0 0 4px 4px;
+  justify-content: space-between;
+  text-shadow: 0px 0px 10px #00fffa;
+}
+
+.game-score p {
+  margin-left: 10px;
+  margin-right: 30px;
+  color: white;
+  animation-name: none;
+}
+
 @keyframes blink {
   from {
     color: rgba(255, 0, 0, 0.7);

@@ -25,6 +25,6 @@ window.addEventListener("load", () => {
 
   window.setInterval(() => {
     gameLoop(ctx, game);
-  }, 30);
+  }, 25);
 
 });

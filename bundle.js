@@ -94,7 +94,7 @@ window.addEventListener("load", () => {
 
   window.setInterval(() => {
     gameLoop(ctx, game);
-  }, 30);
+  }, 25);
 
 });
 
@@ -121,6 +121,7 @@ module.exports = changeBackgroundImage;
 
 const Ship = __webpack_require__(4);
 const Asteroid = __webpack_require__(5);
+const Star = __webpack_require__(11);
 const objUtil = __webpack_require__(6);
 
 module.exports = class Game {
@@ -131,19 +132,27 @@ module.exports = class Game {
     this.currentAsteroids = 0;
     this.ctx = ctx;
     this.addObject = this.addObject.bind(this);
+    this.gameOver = false;
+    this.score = 0;
     this.objects = [
       new Ship([40, 218], [0, 0], this.addObject),
     ];
-    this.gameOver = false;
     for (var i = 1; i <= numAsteroids; i++) {
       this.objects.push( new Asteroid(objUtil.randomAsteroidStartPos(), objUtil.randomAsteroidStartVel()) );
       this.currentAsteroids += 1;
+    }
+    this.stars = [];
+    for (var j = 0; j < 100; j++) {
+      this.stars.push(new Star());
     }
     key("r", () => {
       if (!this.objects.some( (obj) => obj instanceof Ship)) {
         let ship = new Ship([40, 218], [0, 0], this.addObject);
         this.objects.push(ship);
         this.gameOver = false;
+        this.score = 0;
+        $(".score").text("0");
+        $(".health").text("5");
         $(".game-over").addClass("hidden");
       }
     });
@@ -208,6 +217,21 @@ module.exports = class MovingObject {
       return true;
     }
     return false;
+  }
+
+  boundaryWrap(pos) {
+    let returnPos = pos;
+    if (pos[0] < -50) {
+      returnPos[0] = pos[0] + 860;
+    }
+    if (pos[1] < -50) {
+      returnPos[1] = pos[1] +  560;
+    }
+    if (pos[1] > 550) {
+      returnPos[1] = pos[1] - 560;
+      returnPos[0] = pos[0] - 30;
+    }
+    return returnPos;
   }
 
   checkForCollision(otherObject) {
@@ -346,8 +370,10 @@ module.exports = class Ship extends MovingObject {
       radius: 23,
       isDestructable: true,
       health: 5,
+      firing: false,
     };
     this.bindKeyHandlers();
+    this.fireLaser();
   }
 
   bindKeyHandlers() {
@@ -373,13 +399,32 @@ module.exports = class Ship extends MovingObject {
         });
       });
     });
-    key("space", (e) => {
-      if (this.state.health > 0) {
+    // key("space", (e) => {
+    //   e.preventDefault();
+    //   this.state.firing = true;
+    // });
+    $(document).keydown( (e) => {
+      if (e.originalEvent.code === "Space") {
+        e.preventDefault();
+        this.state.firing = true;
+      }
+    });
+    $(document).keyup( (e) => {
+      if (e.originalEvent.code === "Space") {
+        e.preventDefault();
+        this.state.firing = false;
+      }
+    });
+  }
+
+  fireLaser() {
+    setInterval( () => {
+      if (this.state.health > 0 && this.state.firing) {
         let bulletPos = [this.state.pos[0] + 28, this.state.pos[1] + 24];
         let bullet = new ShipBullet(bulletPos, this.addObject);
         this.addObject(bullet);
       }
-    });
+    }, 300);
   }
 
   checkOutOfBounds(state) {
@@ -411,6 +456,7 @@ module.exports = class Ship extends MovingObject {
     }
     this.state.health -= 1;
     otherObject.state.health -=1;
+    $(".health").text(this.state.health);
   }
 
 };
@@ -456,6 +502,7 @@ module.exports = class Asteroid extends MovingObject {
       rotateDir: (0.01 * [-1, 1][Math.round(Math.random())]),
       isDestructable: true,
       health: ASTEROID_DEFAULTS.health[randAsteroidNum],
+      scoreValue: 10 * ASTEROID_DEFAULTS.health[randAsteroidNum],
     };
     if (this.state.dWidth > this.state.dHeight) {
       this.state.radius = this.state.dWidth / 2;
@@ -489,21 +536,6 @@ module.exports = class Asteroid extends MovingObject {
       this.state.dHeight
     );
     ctx.restore();
-  }
-
-  boundaryWrap(pos) {
-    let returnPos = pos;
-    if (pos[0] < -50) {
-      returnPos[0] = pos[0] + 860;
-    }
-    if (pos[1] < -50) {
-      returnPos[1] = pos[1] +  560;
-    }
-    if (pos[1] > 550) {
-      returnPos[1] = pos[1] - 560;
-      returnPos[0] = pos[0] - 30;
-    }
-    return returnPos;
   }
 
 
@@ -551,7 +583,15 @@ const objUtil = __webpack_require__(6);
 const gameLoop = (ctx, game) => {
 
   ctx.clearRect(0, 0, 800, 500);
+  ctx.fillStyle = "black";
   ctx.fillRect(0, 0, 800, 500);
+
+  game.stars.forEach( (star) => {
+    star.state.pos = star.boundaryWrap(star.state.pos);
+    star.move(ctx, null, star.state);
+    star.draw(ctx);
+  });
+
   // ctx.fill();
 
   game.objects.forEach( (obj) => {
@@ -565,6 +605,7 @@ const gameLoop = (ctx, game) => {
         if (checkObj instanceof Asteroid) {
           if (obj.checkForCollision(checkObj)) {
             obj.shipWasHit(checkObj);
+            checkObj.state.scoreValue = 0;
             if (obj.state.health === 0) {
               game.gameOver = true;
             }
@@ -589,7 +630,9 @@ const gameLoop = (ctx, game) => {
     if (obj.state.isDestructable && (obj.state.health < 1)) {
       game.removeObject(obj);
       if (obj instanceof Asteroid) {
+        game.score += obj.state.scoreValue;
         game.currentAsteroids -= 1;
+        $('.score').text(game.score);
       }
     }
 
@@ -714,6 +757,48 @@ module.exports = class Explosion {
     this.state.globalAlpha -= 0.02;
     this.state.health -= 1;
   }
+};
+
+
+/***/ }),
+/* 11 */
+/***/ (function(module, exports, __webpack_require__) {
+
+const objUtil = __webpack_require__(6);
+const MovingObject = __webpack_require__(3);
+
+const STAR_COLORS = ["red", "yellow", "orange", "green", "blue", "white"];
+
+module.exports = class Star extends MovingObject {
+
+  constructor() {
+    let pos = [Math.floor(Math.random() * 800), Math.floor(Math.random() * 500)];
+    let vel = [-Math.random(), 0];
+    super(pos, vel);
+    this.state = {
+      color: STAR_COLORS[Math.round(Math.random() * 6)],
+      pos: pos,
+      vel: vel,
+      size: Math.random(),
+    };
+  }
+
+  draw(ctx) {
+    ctx.beginPath();
+    ctx.arc(this.state.pos[0],
+      this.state.pos[1],
+      this.state.size,
+      0,
+      2 * Math.PI,
+      false
+    );
+    ctx.fillStyle = this.state.color;
+    ctx.fill();
+    ctx.lineWidth = 1;
+    ctx.strokeStyle = this.state.color;
+    ctx.stroke();
+  }
+
 };
 
 
