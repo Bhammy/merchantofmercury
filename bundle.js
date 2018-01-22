@@ -105,7 +105,7 @@ window.addEventListener("load", () => {
 
   window.setInterval(() => {
     gameLoop(ctx, game);
-  }, 25);
+  }, 30);
 
 });
 
@@ -191,6 +191,7 @@ module.exports = class Game {
 /***/ (function(module, exports, __webpack_require__) {
 
 const objUtil = __webpack_require__(6);
+const Explosion = __webpack_require__(10);
 
 module.exports = class MovingObject {
   constructor(options) {
@@ -601,9 +602,10 @@ module.exports = objUtil;
 
 const Ship = __webpack_require__(4);
 const Asteroid = __webpack_require__(5);
-const ShipBullet = __webpack_require__(9);
-const Explosion = __webpack_require__(10);
 const Pirate = __webpack_require__(12);
+const ShipBullet = __webpack_require__(9);
+const PirateMissile = __webpack_require__(13);
+const Explosion = __webpack_require__(10);
 const objUtil = __webpack_require__(6);
 
 const gameLoop = (ctx, game) => {
@@ -621,14 +623,16 @@ const gameLoop = (ctx, game) => {
   game.objects.forEach( (obj) => {
     if (obj instanceof Asteroid) {
       obj.move(ctx);
+
     } else if (obj instanceof Pirate) {
       obj.move(ctx, obj.graphic, obj.state);
+
     } else if (obj instanceof Ship) {
       obj.move(ctx, obj.shipGraphic, obj.state);
       obj.state = obj.checkOutOfBounds(obj.state);
       obj.draw(ctx, obj.shipGraphic, obj.state);
       game.objects.forEach( (checkObj) => {
-        if (checkObj instanceof Asteroid) {
+        if ((checkObj instanceof Asteroid) || (checkObj instanceof PirateMissile)) {
           if (obj.checkForCollision(checkObj)) {
             obj.shipWasHit(checkObj);
             checkObj.state.scoreValue = 0;
@@ -638,21 +642,28 @@ const gameLoop = (ctx, game) => {
           }
         }
       });
-    } else if (obj instanceof ShipBullet) {
+
+    } else if ((obj instanceof ShipBullet) || (obj instanceof PirateMissile)) {
       obj.move(ctx, obj.graphic, obj.state);
       if (obj.checkOutOfBounds(obj.state.pos)) {
         game.removeObject(obj);
       } else {
-        game.objects.forEach( (otherObject) => {
-          if ((otherObject instanceof Asteroid) || (otherObject instanceof Pirate)) {
-            obj.handleBullet(otherObject);
-          }
+        if (obj instanceof ShipBullet) {
+          game.objects.forEach( (otherObject) => {
+            if ((otherObject instanceof Asteroid) || (otherObject instanceof Pirate)) {
+              obj.handleBullet(otherObject);
+            }
             obj.draw(ctx, obj.graphic, obj.state);
-        });
+          });
+        } else {
+          obj.draw(ctx, obj.graphic, obj.state);
+        }
       }
     } else if (obj instanceof Explosion) {
       obj.draw(ctx);
+
     }
+
     if (obj.state.isDestructable && (obj.state.health < 1)) {
       game.removeObject(obj);
       if (obj instanceof Asteroid) {
@@ -831,12 +842,12 @@ module.exports = class Star extends MovingObject {
 /***/ (function(module, exports, __webpack_require__) {
 
 const MovingObject = __webpack_require__(3);
-const Explosion = __webpack_require__(10);
+const PirateMissile = __webpack_require__(13);
 const objUtil = __webpack_require__(6);
 
 module.exports = class Pirate extends MovingObject {
   constructor(pos, vel, addObject) {
-    super({ pos: pos, vel: vel});
+    super({ pos: pos, vel: [vel[1], vel[0]]});
     this.graphic = $("#sprites2")[0];
     this.addObject = addObject;
     this.state = {
@@ -851,7 +862,7 @@ module.exports = class Pirate extends MovingObject {
         radius: 30,
         isDestructable: true,
         health: 5,
-        timeToMissle: 30,
+        timeToMissile: 40,
         scoreValue: 100,
     };
     this.state.cooldown = this.state.timeToMissle;
@@ -861,10 +872,57 @@ module.exports = class Pirate extends MovingObject {
     this.state.pos[0] = this.state.pos[0] + this.state.vel[0];
     this.state.pos[1] = this.state.pos[1] + this.state.vel[1];
     this.draw(ctx, this.graphic, this.state);
+    this.state.timeToMissile -= 1;
+    if (this.state.timeToMissile === 0) {
+      this.fireMissile([this.state.pos[0] + this.state.dWidth / 2, this.state.pos[1] + this.state.dHeight / 2]);
+    }
     this.state.pos = this.boundaryWrap(this.state.pos);
   }
 
+  fireMissile(pos) {
+    let missile = new PirateMissile(pos);
+    this.state.timeToMissile = 20;
+    this.addObject(missile);
+  }
 
+};
+
+
+/***/ }),
+/* 13 */
+/***/ (function(module, exports, __webpack_require__) {
+
+const MovingObject = __webpack_require__(3);
+const Explosion = __webpack_require__(10);
+
+module.exports = class PirateMissile extends MovingObject {
+  constructor(pos) {
+    super({
+      pos: pos,
+      vel: [-2, 0],
+    });
+    this.graphic = $("#sprites1")[0];
+    this.state = {
+      sx: 200,
+      sy: 62,
+      sWidth: 14,
+      sHeight: 6,
+      pos: pos,
+      vel: [-2, 0],
+      dWidth: 14,
+      dHeight: 6,
+      radius: 3,
+      health: 1,
+      isDestructable: true,
+    };
+  }
+
+  move(ctx, graphic, state) {
+    state.vel = [state.vel[0] + (state.vel[0]/100), 0];
+    state.pos[0] = state.pos[0] + state.vel[0];
+    state.pos[1] = state.pos[1] + state.vel[1];
+  }
+  
 };
 
 
