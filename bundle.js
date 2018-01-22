@@ -89,6 +89,14 @@ window.addEventListener("load", () => {
     bgNum = nextNum;
   }, 10000), 10000);
 
+  $("#audio-toggle").click( () => {
+    let audio = $("audio")[0];
+    if (audio.paused) {
+      audio.play();
+    } else {
+      audio.pause();
+    }
+  });
 
   // let game = new Game(ctx, 20);
   let game = new Game(ctx, 20);
@@ -129,10 +137,11 @@ module.exports = class Game {
 
   constructor(ctx, numAsteroids) {
     //save room for numPirates
+    this.addObject = this.addObject.bind(this);
+    this.origNumAsteroids = numAsteroids;
     this.numAsteroids = numAsteroids;
     this.currentAsteroids = 0;
     this.ctx = ctx;
-    this.addObject = this.addObject.bind(this);
     this.gameOver = false;
     this.score = 0;
     this.objects = [
@@ -152,6 +161,7 @@ module.exports = class Game {
         this.objects.push(ship);
         this.gameOver = false;
         this.score = 0;
+        this.numAsteroids = this.origNumAsteroids;
         $(".score").text("0");
         $(".health").text("5");
         $(".game-over").addClass("hidden");
@@ -400,22 +410,21 @@ module.exports = class Ship extends MovingObject {
         });
       });
     });
-    // key("space", (e) => {
-    //   e.preventDefault();
-    //   this.state.firing = true;
-    // });
+
     $(document).keydown( (e) => {
       if (e.originalEvent.code === "Space") {
         e.preventDefault();
         this.state.firing = true;
       }
     });
+
     $(document).keyup( (e) => {
       if (e.originalEvent.code === "Space") {
         e.preventDefault();
         this.state.firing = false;
       }
     });
+
   }
 
   fireLaser() {
@@ -425,7 +434,7 @@ module.exports = class Ship extends MovingObject {
         let bullet = new ShipBullet(bulletPos, this.addObject);
         this.addObject(bullet);
       }
-    }, 300);
+    }, 100);
   }
 
   checkOutOfBounds(state) {

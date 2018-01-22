@@ -20,6 +20,14 @@ window.addEventListener("load", () => {
     bgNum = nextNum;
   }, 10000), 10000);
 
+  $("#audio-toggle").click( () => {
+    let audio = $("audio")[0];
+    if (audio.paused) {
+      audio.play();
+    } else {
+      audio.pause();
+    }
+  });
 
   // let game = new Game(ctx, 20);
   let game = new Game(ctx, 20);
