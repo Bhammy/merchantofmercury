@@ -182,11 +182,21 @@ content {
 }
 
 .github-logo {
-  width: 80px;
+  width: 50px;
   height: auto;
 }
 
 .linkedin-logo {
-  width: 100px;
+  width: 50px;
+  height: auto;
+}
+
+.mail-logo {
+  width: 50px;
+  height: auto;
+}
+
+#audio-logo {
+  width: 50px;
   height: auto;
 }

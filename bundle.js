@@ -93,8 +93,10 @@ window.addEventListener("load", () => {
     let audio = $("audio")[0];
     if (audio.paused) {
       audio.play();
+      $("#audio-logo").attr("src", "./assets/speaker.png");
     } else {
       audio.pause();
+      $("#audio-logo").attr("src", "./assets/mute.png");
     }
   });
 
@@ -602,9 +604,7 @@ const gameLoop = (ctx, game) => {
     star.move(ctx, null, star.state);
     star.draw(ctx);
   });
-
-  // ctx.fill();
-
+  
   game.objects.forEach( (obj) => {
     if (obj instanceof Asteroid) {
       obj.move(ctx);

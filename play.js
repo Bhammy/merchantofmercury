@@ -24,8 +24,10 @@ window.addEventListener("load", () => {
     let audio = $("audio")[0];
     if (audio.paused) {
       audio.play();
+      $("#audio-logo").attr("src", "./assets/speaker.png");
     } else {
       audio.pause();
+      $("#audio-logo").attr("src", "./assets/mute.png");
     }
   });
 
