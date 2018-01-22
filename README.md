@@ -29,3 +29,4 @@ Using native JavaScript and HTML5 features, players can:
 
 Player ship and spaceport sprite credits go to MillionthVector at: http://millionthvector.blogspot.com/p/free-sprites.html
 Other sprite credits go to: http://pixeljoint.com/pixelart/43069.htm
+Music found courtesy of Rolemusic: http://freemusicarchive.org/music/Rolemusic/

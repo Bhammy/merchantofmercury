@@ -180,3 +180,13 @@ content {
     color: rgba(255, 255, 255, 1);
   }
 }
+
+.github-logo {
+  width: 80px;
+  height: auto;
+}
+
+.linkedin-logo {
+  width: 100px;
+  height: auto;
+}

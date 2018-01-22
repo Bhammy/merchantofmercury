@@ -144,6 +144,7 @@ module.exports = class Game {
     this.ctx = ctx;
     this.gameOver = false;
     this.score = 0;
+    this.tick = 0;
     this.objects = [
       new Ship([40, 218], [0, 0], this.addObject),
     ];
@@ -239,7 +240,7 @@ module.exports = class MovingObject {
       returnPos[1] = pos[1] +  560;
     }
     if (pos[1] > 550) {
-      returnPos[1] = pos[1] - 560;
+      returnPos[1] = pos[1] - 580;
       returnPos[0] = pos[0] - 30;
     }
     return returnPos;
@@ -465,7 +466,7 @@ module.exports = class Ship extends MovingObject {
       this.addObject(new Explosion(pos, this.state.health, 2));
     }
     this.state.health -= 1;
-    otherObject.state.health -=1;
+    otherObject.state.health = 0;
     $(".health").text(this.state.health);
   }
 
@@ -657,10 +658,16 @@ const gameTick = (ctx, game) => {
   //reserve this for events that happen over more than one frame
   if (game.gameOver) {
     $(".game-over").removeClass("hidden");
-  }
-  if (game.currentAsteroids < game.numAsteroids) {
-    game.objects.push(new Asteroid(objUtil.randomAsteroidStartPos(), objUtil.randomAsteroidStartVel()));
-    game.currentAsteroids += 1;
+  } else {
+    if (game.currentAsteroids < game.numAsteroids) {
+      game.objects.push(new Asteroid(objUtil.randomAsteroidStartPos(), objUtil.randomAsteroidStartVel()));
+      game.currentAsteroids += 1;
+    }
+    game.tick += 1;
+    if (game.tick % 10 === 0) {
+      game.score += 1;
+      $('.score').text(game.score);
+    }
   }
 };
 
