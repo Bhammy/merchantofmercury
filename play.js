@@ -31,11 +31,10 @@ window.addEventListener("load", () => {
     }
   });
 
-  // let game = new Game(ctx, 20);
   let game = new Game(ctx, 20);
 
   window.setInterval(() => {
     gameLoop(ctx, game);
-  }, 30);
+  }, 25);
 
 });

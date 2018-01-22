@@ -100,12 +100,11 @@ window.addEventListener("load", () => {
     }
   });
 
-  // let game = new Game(ctx, 20);
   let game = new Game(ctx, 20);
 
   window.setInterval(() => {
     gameLoop(ctx, game);
-  }, 30);
+  }, 25);
 
 });
 
@@ -450,7 +449,7 @@ module.exports = class Ship extends MovingObject {
         let bullet = new ShipBullet(bulletPos, this.addObject);
         this.addObject(bullet);
       }
-    }, 100);
+    }, 150);
   }
 
   checkOutOfBounds(state) {
