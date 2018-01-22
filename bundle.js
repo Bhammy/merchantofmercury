@@ -151,7 +151,7 @@ module.exports = class Game {
       new Ship([40, 218], [0, 0], this.addObject),
     ];
     for (var i = 1; i <= numAsteroids; i++) {
-      this.objects.push( new Asteroid(objUtil.randomAsteroidStartPos(), objUtil.randomAsteroidStartVel()) );
+      this.objects.push( new Asteroid(objUtil.randomStartPos(), objUtil.randomStartVel()) );
       this.currentAsteroids += 1;
     }
     this.stars = [];
@@ -250,9 +250,21 @@ module.exports = class MovingObject {
 
   checkForCollision(otherObject) {
     let thisObjectCenter = [this.state.pos[0] + this.state.dWidth/2, this.state.pos[1] + this.dHeight/2];
-    let otherObjectCenter = [otherObject.pos[0] + otherObject.state.dWidth/2, otherObject.pos[1] + otherObject.dHeight/2];
+    let otherObjectCenter = [otherObject.state.pos[0] + otherObject.state.dWidth/2, otherObject.state.pos[1] + otherObject.dHeight/2];
     let centerDistances = objUtil.dist(this.state.pos, otherObject.state.pos);
     return (centerDistances < (this.state.radius + otherObject.state.radius));
+  }
+
+  handleBullet(otherObject) {
+    if (this.checkForCollision(otherObject)) {
+      if (otherObject.state.isDestructable) {
+        otherObject.state.health -= 1;
+        this.state.health -= 1;
+        this.addObject( new Explosion(this.state.pos, otherObject.state.health));
+      }
+      return true;
+    }
+    return false;
   }
 
 };
@@ -561,12 +573,12 @@ module.exports = class Asteroid extends MovingObject {
 
 const objUtil = {
 
-    randomAsteroidStartPos: () => {
+    randomStartPos: () => {
       // returns startPos off right, w/in canvas bounds
       return [810, (Math.random() * (460) + 20)];
     },
 
-    randomAsteroidStartVel: () => {
+    randomStartVel: () => {
       // returns randomVel, headed leftish
       return [-(Math.random() * 5), (Math.random() * [-1, 1][Math.round(Math.random())]) ];
     },
@@ -591,6 +603,7 @@ const Ship = __webpack_require__(4);
 const Asteroid = __webpack_require__(5);
 const ShipBullet = __webpack_require__(9);
 const Explosion = __webpack_require__(10);
+const Pirate = __webpack_require__(12);
 const objUtil = __webpack_require__(6);
 
 const gameLoop = (ctx, game) => {
@@ -604,10 +617,12 @@ const gameLoop = (ctx, game) => {
     star.move(ctx, null, star.state);
     star.draw(ctx);
   });
-  
+
   game.objects.forEach( (obj) => {
     if (obj instanceof Asteroid) {
       obj.move(ctx);
+    } else if (obj instanceof Pirate) {
+      obj.move(ctx, obj.graphic, obj.state);
     } else if (obj instanceof Ship) {
       obj.move(ctx, obj.shipGraphic, obj.state);
       obj.state = obj.checkOutOfBounds(obj.state);
@@ -629,7 +644,7 @@ const gameLoop = (ctx, game) => {
         game.removeObject(obj);
       } else {
         game.objects.forEach( (otherObject) => {
-          if (otherObject instanceof Asteroid) {
+          if ((otherObject instanceof Asteroid) || (otherObject instanceof Pirate)) {
             obj.handleBullet(otherObject);
           }
             obj.draw(ctx, obj.graphic, obj.state);
@@ -660,13 +675,16 @@ const gameTick = (ctx, game) => {
     $(".game-over").removeClass("hidden");
   } else {
     if (game.currentAsteroids < game.numAsteroids) {
-      game.objects.push(new Asteroid(objUtil.randomAsteroidStartPos(), objUtil.randomAsteroidStartVel()));
+      game.objects.push(new Asteroid(objUtil.randomStartPos(), objUtil.randomStartVel()));
       game.currentAsteroids += 1;
     }
     game.tick += 1;
     if (game.tick % 10 === 0) {
       game.score += 1;
       $('.score').text(game.score);
+    }
+    if (game.tick % 200 === 0) {
+      game.objects.push(new Pirate(objUtil.randomStartPos(), objUtil.randomStartVel(), game.addObject));
     }
   }
 };
@@ -703,18 +721,6 @@ module.exports = class ShipBullet extends MovingObject {
       health: 1,
       isDestructable: true,
     };
-  }
-
-  handleBullet(otherObject) {
-    if (this.checkForCollision(otherObject)) {
-      if (otherObject.state.isDestructable) {
-        otherObject.state.health -= 1;
-        this.state.health -= 1;
-        this.addObject( new Explosion(this.state.pos, otherObject.state.health));
-      }
-      return true;
-    }
-    return false;
   }
 
 };
@@ -816,6 +822,48 @@ module.exports = class Star extends MovingObject {
     ctx.strokeStyle = this.state.color;
     ctx.stroke();
   }
+
+};
+
+
+/***/ }),
+/* 12 */
+/***/ (function(module, exports, __webpack_require__) {
+
+const MovingObject = __webpack_require__(3);
+const Explosion = __webpack_require__(10);
+const objUtil = __webpack_require__(6);
+
+module.exports = class Pirate extends MovingObject {
+  constructor(pos, vel, addObject) {
+    super({ pos: pos, vel: vel});
+    this.graphic = $("#sprites2")[0];
+    this.addObject = addObject;
+    this.state = {
+        sx: 0,
+        sy: 0,
+        sWidth: 64,
+        sHeight: 64,
+        pos: pos,
+        vel: vel,
+        dWidth: 64,
+        dHeight: 64,
+        radius: 30,
+        isDestructable: true,
+        health: 5,
+        timeToMissle: 30,
+        scoreValue: 100,
+    };
+    this.state.cooldown = this.state.timeToMissle;
+  }
+
+  move(ctx) {
+    this.state.pos[0] = this.state.pos[0] + this.state.vel[0];
+    this.state.pos[1] = this.state.pos[1] + this.state.vel[1];
+    this.draw(ctx, this.graphic, this.state);
+    this.state.pos = this.boundaryWrap(this.state.pos);
+  }
+
 
 };
 
