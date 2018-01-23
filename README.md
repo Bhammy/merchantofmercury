@@ -25,7 +25,7 @@ Object-Oriented Design: every object maintains information about its current sta
   * This design is very modular and extensible - pirate ships and missiles were added in over the course of just a few hours.
   * Objects share method names - such as draw or move - so that a single game loop handles drawing and animation as necessary
   * Native Canvas methods used for animation - every asteroid is rotated through manipulation of the canvas context
-  * Explosions are drawn using regular canvas lines/strokes/arcs for purposes of experimentation
+  * Explosions are drawn using regular canvas lines/strokes/arcs for purposes of experimentation; explosion size and length is determined by the health of the colliding object, resulting in bigger explosions for bigger/harder-to-kill objects
   * Collisions are detected with a circle-collision method based on every object's image state data
 
 Parallax background: the parallax background is a separate set of canvas objects that still use MovingObject methods; one hundred stars are drawn with random left velocities and random colors for maximum visual appeal.
