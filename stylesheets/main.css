@@ -200,3 +200,7 @@ content {
   width: 50px;
   height: auto;
 }
+
+#audio-toggle img {
+  cursor: pointer;
+}
