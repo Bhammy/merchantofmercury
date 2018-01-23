@@ -249,9 +249,10 @@ module.exports = class MovingObject {
   }
 
   checkForCollision(otherObject) {
-    let thisObjectCenter = [this.state.pos[0] + this.state.dWidth/2, this.state.pos[1] + this.dHeight/2];
-    let otherObjectCenter = [otherObject.state.pos[0] + otherObject.state.dWidth/2, otherObject.state.pos[1] + otherObject.dHeight/2];
-    let centerDistances = objUtil.dist(this.state.pos, otherObject.state.pos);
+    let thisObjectCenter = [this.state.pos[0] + this.state.dWidth / 2, this.state.pos[1] + this.state.dHeight / 2];
+    let otherObjectCenter = [otherObject.state.pos[0] + otherObject.state.dWidth / 2, otherObject.state.pos[1] + otherObject.state.dHeight / 2];
+    let centerDistances = objUtil.dist(thisObjectCenter, otherObjectCenter);
+    // debugger
     return (centerDistances < (this.state.radius + otherObject.state.radius));
   }
 
@@ -475,10 +476,8 @@ module.exports = class Ship extends MovingObject {
   }
 
   shipWasHit(otherObject) {
-    for (var i = this.state.health; i > (this.state.health - 2) ; i--) {
-      let pos = [this.state.pos[0] + objUtil.randSmall() + 15, this.state.pos[1] + objUtil.randSmall() + 15];
-      this.addObject(new Explosion(pos, this.state.health, 2));
-    }
+    let pos = [this.state.pos[0] + objUtil.randSmall() + 15, this.state.pos[1] + objUtil.randSmall() + 15];
+    this.addObject(new Explosion(pos, this.state.health, 2));
     this.state.health -= 1;
     otherObject.state.health = 0;
     $(".health").text(this.state.health);
@@ -900,16 +899,16 @@ module.exports = class PirateMissile extends MovingObject {
       pos: pos,
       vel: [-2, 0],
     });
-    this.graphic = $("#sprites1")[0];
+    this.graphic = $("#sprites3")[0];
     this.state = {
-      sx: 200,
-      sy: 62,
+      sx: 0,
+      sy: 0,
       sWidth: 14,
-      sHeight: 6,
+      sHeight: 4,
       pos: pos,
       vel: [-2, 0],
       dWidth: 14,
-      dHeight: 6,
+      dHeight: 4,
       radius: 3,
       health: 1,
       isDestructable: true,
@@ -921,7 +920,7 @@ module.exports = class PirateMissile extends MovingObject {
     state.pos[0] = state.pos[0] + state.vel[0];
     state.pos[1] = state.pos[1] + state.vel[1];
   }
-  
+
 };
 
 
