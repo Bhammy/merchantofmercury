@@ -60,140 +60,15 @@
 /******/ 	__webpack_require__.p = "";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 0);
+/******/ 	return __webpack_require__(__webpack_require__.s = 7);
 /******/ })
 /************************************************************************/
 /******/ ([
 /* 0 */
 /***/ (function(module, exports, __webpack_require__) {
 
-//note - use Firebase for auth - just key/value pairs - save as bonus feature
-const changeBackgroundImage = __webpack_require__(1);
-const Game = __webpack_require__(2);
-const gameLoop = __webpack_require__(7);
-
-window.addEventListener("load", () => {
-  const canvas = document.getElementById('game-canvas');
-  canvas.width = 800;
-  canvas.height = 500;
-
-  const ctx = canvas.getContext('2d');
-  ctx.fillStyle = "black";
-  ctx.rect(0, 0, 800, 500);
-  ctx.fill();
-
-  let bgNum = 1;
-
-  setTimeout(setInterval( () => {
-    let nextNum = changeBackgroundImage(bgNum);
-    bgNum = nextNum;
-  }, 10000), 10000);
-
-  $("#audio-toggle").click( () => {
-    let audio = $("audio")[0];
-    if (audio.paused) {
-      audio.play();
-      $("#audio-logo").attr("src", "./assets/speaker.png");
-    } else {
-      audio.pause();
-      $("#audio-logo").attr("src", "./assets/mute.png");
-    }
-  });
-
-  let game = new Game(ctx, 20);
-
-  window.setInterval(() => {
-    gameLoop(ctx, game);
-  }, 25);
-
-});
-
-
-/***/ }),
-/* 1 */
-/***/ (function(module, exports) {
-
-const changeBackgroundImage = (num) => {
-  let nextNum = num + 1;
-  if (nextNum > 7) {
-    nextNum = 1;
-  }
-  $("body").removeClass(`bgimage-${num}`).addClass(`bgimage-${nextNum}`);
-  return nextNum;
-};
-
-module.exports = changeBackgroundImage;
-
-
-/***/ }),
-/* 2 */
-/***/ (function(module, exports, __webpack_require__) {
-
-const Ship = __webpack_require__(4);
-const Asteroid = __webpack_require__(5);
-const Star = __webpack_require__(11);
-const objUtil = __webpack_require__(6);
-
-module.exports = class Game {
-
-  constructor(ctx, numAsteroids) {
-    //save room for numPirates
-    this.addObject = this.addObject.bind(this);
-    this.origNumAsteroids = numAsteroids;
-    this.numAsteroids = numAsteroids;
-    this.currentAsteroids = 0;
-    this.ctx = ctx;
-    this.gameOver = false;
-    this.score = 0;
-    this.tick = 0;
-    this.objects = [
-      new Ship([40, 218], [0, 0], this.addObject),
-    ];
-    for (var i = 1; i <= numAsteroids; i++) {
-      this.objects.push( new Asteroid(objUtil.randomStartPos(), objUtil.randomStartVel()) );
-      this.currentAsteroids += 1;
-    }
-    this.stars = [];
-    for (var j = 0; j < 100; j++) {
-      this.stars.push(new Star());
-    }
-    key("r", () => {
-      if (!this.objects.some( (obj) => obj instanceof Ship)) {
-        this.objects.forEach( (obj) => {
-          obj.state.health = 0;
-        });
-        let ship = new Ship([40, 218], [0, 0], this.addObject);
-        this.objects.push(ship);
-        this.gameOver = false;
-        this.score = 0;
-        this.numAsteroids = this.origNumAsteroids;
-        $(".score").text("0");
-        $(".health").text("5");
-        $(".game-over").addClass("hidden");
-      }
-    });
-  }
-
-  addObject(object) {
-    this.objects.push(object);
-  }
-
-  removeObject(object) {
-    this.objects.splice(this.objects.indexOf(object), 1);
-  }
-
-
-
-
-};
-
-
-/***/ }),
-/* 3 */
-/***/ (function(module, exports, __webpack_require__) {
-
-const objUtil = __webpack_require__(6);
-const Explosion = __webpack_require__(10);
+const objUtil = __webpack_require__(1);
+const Explosion = __webpack_require__(2);
 
 module.exports = class MovingObject {
   constructor(options) {
@@ -275,13 +150,99 @@ module.exports = class MovingObject {
 
 
 /***/ }),
-/* 4 */
+/* 1 */
+/***/ (function(module, exports) {
+
+const objUtil = {
+
+    randomStartPos: () => {
+      // returns startPos off right, w/in canvas bounds
+      return [810, (Math.random() * (460) + 20)];
+    },
+
+    randomStartVel: () => {
+      // returns randomVel, headed leftish
+      return [-(Math.random() * 5), (Math.random() * [-1, 1][Math.round(Math.random())]) ];
+    },
+
+    dist: (pos1, pos2) => {
+      return Math.sqrt( Math.pow(pos1[0] - pos2[0], 2) + Math.pow(pos1[1] - pos2[1], 2));
+    },
+
+    randSmall: () => {
+      return (Math.round(Math.random() * 3) * ([-1, 1][Math.round(Math.random())]));
+    }
+};
+
+module.exports = objUtil;
+
+
+/***/ }),
+/* 2 */
+/***/ (function(module, exports) {
+
+const EXPLOSION_TYPES = {
+  0: {
+    outline: '#ff5000',
+    blur: 'orange',
+  },
+
+  1: {
+    outline: 'red',
+    blur: 'yellow',
+  },
+
+  2: {
+    outline: 'green',
+    blur: '#0af4fc',
+  }
+
+};
+
+module.exports = class Explosion {
+  constructor(pos, health, type) {
+    this.state = {
+      pos: pos,
+      isDestructable: true,
+      explosionSize: 3 - health,
+      explosionType: (type || Math.round(Math.random() * 1)),
+      globalAlpha: 0.9,
+    };
+    this.state.health = 30 - (this.state.explosionSize * 10);
+  }
+
+  draw(ctx) {
+    ctx.beginPath();
+    ctx.arc(this.state.pos[0],
+      this.state.pos[1],
+      Math.abs((this.state.explosionSize)),
+      0,
+      2 * Math.PI,
+      false
+    );
+    ctx.lineWidth = 3;
+    ctx.strokeStyle = EXPLOSION_TYPES[this.state.explosionType].outline;
+    ctx.shadowColor = EXPLOSION_TYPES[this.state.explosionType].blur;
+    ctx.shadowBlur = 20;
+    ctx.globalAlpha = this.state.globalAlpha;
+    ctx.stroke();
+    ctx.shadowBlur = 0;
+    ctx.globalAlpha = 1;
+    this.state.explosionSize -= 1;
+    this.state.globalAlpha -= 0.02;
+    this.state.health -= 1;
+  }
+};
+
+
+/***/ }),
+/* 3 */
 /***/ (function(module, exports, __webpack_require__) {
 
-const MovingObject = __webpack_require__(3);
-const ShipBullet = __webpack_require__(9);
-const Explosion = __webpack_require__(10);
-const objUtil = __webpack_require__(6);
+const MovingObject = __webpack_require__(0);
+const ShipBullet = __webpack_require__(4);
+const Explosion = __webpack_require__(2);
+const objUtil = __webpack_require__(1);
 
 const SHIP_DIRECTIONS = {
   "up": [0, -5],
@@ -490,10 +451,43 @@ module.exports = class Ship extends MovingObject {
 
 
 /***/ }),
+/* 4 */
+/***/ (function(module, exports, __webpack_require__) {
+
+const MovingObject = __webpack_require__(0);
+const Explosion = __webpack_require__(2);
+
+module.exports = class ShipBullet extends MovingObject {
+  constructor(pos, addObject) {
+    super({
+      pos: pos,
+      vel: [12, 0],
+    });
+    this.addObject = addObject;
+    this.graphic = $("#sprites1")[0];
+    this.state = {
+      sx: 200,
+      sy: 8,
+      sWidth: 14,
+      sHeight: 4,
+      pos: pos,
+      vel: [12, 0],
+      dWidth: 14,
+      dHeight: 4,
+      radius: 2,
+      health: 1,
+      isDestructable: true,
+    };
+  }
+
+};
+
+
+/***/ }),
 /* 5 */
 /***/ (function(module, exports, __webpack_require__) {
 
-const MovingObject  = __webpack_require__(3);
+const MovingObject  = __webpack_require__(0);
 
 const ASTEROID_DEFAULTS = {
   sx: [0, 46, 0, 46, 7, 53, 10, 67],
@@ -571,43 +565,221 @@ module.exports = class Asteroid extends MovingObject {
 
 /***/ }),
 /* 6 */
-/***/ (function(module, exports) {
+/***/ (function(module, exports, __webpack_require__) {
 
-const objUtil = {
+const MovingObject = __webpack_require__(0);
+const Explosion = __webpack_require__(2);
 
-    randomStartPos: () => {
-      // returns startPos off right, w/in canvas bounds
-      return [810, (Math.random() * (460) + 20)];
-    },
+module.exports = class PirateMissile extends MovingObject {
+  constructor(pos) {
+    super({
+      pos: pos,
+      vel: [-2, 0],
+    });
+    this.graphic = $("#sprites3")[0];
+    this.state = {
+      sx: 0,
+      sy: 0,
+      sWidth: 14,
+      sHeight: 4,
+      pos: pos,
+      vel: [-2, 0],
+      dWidth: 14,
+      dHeight: 4,
+      radius: 3,
+      health: 1,
+      isDestructable: true,
+    };
+  }
 
-    randomStartVel: () => {
-      // returns randomVel, headed leftish
-      return [-(Math.random() * 5), (Math.random() * [-1, 1][Math.round(Math.random())]) ];
-    },
+  move(ctx, graphic, state) {
+    state.vel = [state.vel[0] + (state.vel[0]/100), 0];
+    state.pos[0] = state.pos[0] + state.vel[0];
+    state.pos[1] = state.pos[1] + state.vel[1];
+  }
 
-    dist: (pos1, pos2) => {
-      return Math.sqrt( Math.pow(pos1[0] - pos2[0], 2) + Math.pow(pos1[1] - pos2[1], 2));
-    },
-
-    randSmall: () => {
-      return (Math.round(Math.random() * 3) * ([-1, 1][Math.round(Math.random())]));
-    }
 };
-
-module.exports = objUtil;
 
 
 /***/ }),
 /* 7 */
 /***/ (function(module, exports, __webpack_require__) {
 
-const Ship = __webpack_require__(4);
+//note - use Firebase for auth - just key/value pairs - save as bonus feature
+const changeBackgroundImage = __webpack_require__(8);
+const Game = __webpack_require__(9);
+const gameLoop = __webpack_require__(11);
+
+window.addEventListener("load", () => {
+  const canvas = document.getElementById('game-canvas');
+  canvas.width = 800;
+  canvas.height = 500;
+
+  const ctx = canvas.getContext('2d');
+  ctx.fillStyle = "black";
+  ctx.rect(0, 0, 800, 500);
+  ctx.fill();
+
+  let bgNum = 1;
+
+  setTimeout(setInterval( () => {
+    let nextNum = changeBackgroundImage(bgNum);
+    bgNum = nextNum;
+  }, 10000), 10000);
+
+  $("#audio-toggle").click( () => {
+    let audio = $("audio")[0];
+    if (audio.paused) {
+      audio.play();
+      $("#audio-logo").attr("src", "./assets/speaker.png");
+    } else {
+      audio.pause();
+      $("#audio-logo").attr("src", "./assets/mute.png");
+    }
+  });
+
+  let game = new Game(ctx, 20);
+
+  window.setInterval(() => {
+    gameLoop(ctx, game);
+  }, 25);
+
+});
+
+
+/***/ }),
+/* 8 */
+/***/ (function(module, exports) {
+
+const changeBackgroundImage = (num) => {
+  let nextNum = num + 1;
+  if (nextNum > 7) {
+    nextNum = 1;
+  }
+  $("body").removeClass(`bgimage-${num}`).addClass(`bgimage-${nextNum}`);
+  return nextNum;
+};
+
+module.exports = changeBackgroundImage;
+
+
+/***/ }),
+/* 9 */
+/***/ (function(module, exports, __webpack_require__) {
+
+const Ship = __webpack_require__(3);
+const Asteroid = __webpack_require__(5);
+const Star = __webpack_require__(10);
+const objUtil = __webpack_require__(1);
+
+module.exports = class Game {
+
+  constructor(ctx, numAsteroids) {
+    //save room for numPirates
+    this.addObject = this.addObject.bind(this);
+    this.origNumAsteroids = numAsteroids;
+    this.numAsteroids = numAsteroids;
+    this.currentAsteroids = 0;
+    this.ctx = ctx;
+    this.gameOver = false;
+    this.score = 0;
+    this.tick = 0;
+    this.objects = [
+      new Ship([40, 218], [0, 0], this.addObject),
+    ];
+    for (var i = 1; i <= numAsteroids; i++) {
+      this.objects.push( new Asteroid(objUtil.randomStartPos(), objUtil.randomStartVel()) );
+      this.currentAsteroids += 1;
+    }
+    this.stars = [];
+    for (var j = 0; j < 100; j++) {
+      this.stars.push(new Star());
+    }
+    key("r", () => {
+      if (!this.objects.some( (obj) => obj instanceof Ship)) {
+        this.objects.forEach( (obj) => {
+          obj.state.health = 0;
+          obj.state.scoreValue = 0;
+        });
+        this.score = 0;
+        let ship = new Ship([40, 218], [0, 0], this.addObject);
+        this.objects.push(ship);
+        this.gameOver = false;
+        this.numAsteroids = this.origNumAsteroids;
+        $(".score").text("0");
+        $(".health").text("5");
+        $(".game-over").addClass("hidden");
+      }
+    });
+  }
+
+  addObject(object) {
+    this.objects.push(object);
+  }
+
+  removeObject(object) {
+    this.objects.splice(this.objects.indexOf(object), 1);
+  }
+
+
+
+
+};
+
+
+/***/ }),
+/* 10 */
+/***/ (function(module, exports, __webpack_require__) {
+
+const objUtil = __webpack_require__(1);
+const MovingObject = __webpack_require__(0);
+
+const STAR_COLORS = ["red", "yellow", "orange", "green", "blue", "white"];
+
+module.exports = class Star extends MovingObject {
+
+  constructor() {
+    let pos = [Math.floor(Math.random() * 800), Math.floor(Math.random() * 500)];
+    let vel = [-Math.random(), 0];
+    super(pos, vel);
+    this.state = {
+      color: STAR_COLORS[Math.round(Math.random() * 6)],
+      pos: pos,
+      vel: vel,
+      size: Math.random(),
+    };
+  }
+
+  draw(ctx) {
+    ctx.beginPath();
+    ctx.arc(this.state.pos[0],
+      this.state.pos[1],
+      this.state.size,
+      0,
+      2 * Math.PI,
+      false
+    );
+    ctx.fillStyle = this.state.color;
+    ctx.fill();
+    ctx.lineWidth = 1;
+    ctx.strokeStyle = this.state.color;
+    ctx.stroke();
+  }
+
+};
+
+
+/***/ }),
+/* 11 */
+/***/ (function(module, exports, __webpack_require__) {
+
+const Ship = __webpack_require__(3);
 const Asteroid = __webpack_require__(5);
 const Pirate = __webpack_require__(12);
-const ShipBullet = __webpack_require__(9);
-const PirateMissile = __webpack_require__(13);
-const Explosion = __webpack_require__(10);
-const objUtil = __webpack_require__(6);
+const ShipBullet = __webpack_require__(4);
+const PirateMissile = __webpack_require__(6);
+const Explosion = __webpack_require__(2);
+const objUtil = __webpack_require__(1);
 
 const gameLoop = (ctx, game) => {
 
@@ -705,146 +877,12 @@ module.exports = gameLoop;
 
 
 /***/ }),
-/* 8 */,
-/* 9 */
-/***/ (function(module, exports, __webpack_require__) {
-
-const MovingObject = __webpack_require__(3);
-const Explosion = __webpack_require__(10);
-
-module.exports = class ShipBullet extends MovingObject {
-  constructor(pos, addObject) {
-    super({
-      pos: pos,
-      vel: [12, 0],
-    });
-    this.addObject = addObject;
-    this.graphic = $("#sprites1")[0];
-    this.state = {
-      sx: 200,
-      sy: 8,
-      sWidth: 14,
-      sHeight: 4,
-      pos: pos,
-      vel: [12, 0],
-      dWidth: 14,
-      dHeight: 4,
-      radius: 2,
-      health: 1,
-      isDestructable: true,
-    };
-  }
-
-};
-
-
-/***/ }),
-/* 10 */
-/***/ (function(module, exports) {
-
-const EXPLOSION_TYPES = {
-  0: {
-    outline: '#ff5000',
-    blur: 'orange',
-  },
-
-  1: {
-    outline: 'red',
-    blur: 'yellow',
-  },
-
-  2: {
-    outline: 'green',
-    blur: '#0af4fc',
-  }
-
-};
-
-module.exports = class Explosion {
-  constructor(pos, health, type) {
-    this.state = {
-      pos: pos,
-      isDestructable: true,
-      explosionSize: 3 - health,
-      explosionType: (type || Math.round(Math.random() * 1)),
-      globalAlpha: 0.9,
-    };
-    this.state.health = 30 - (this.state.explosionSize * 10);
-  }
-
-  draw(ctx) {
-    ctx.beginPath();
-    ctx.arc(this.state.pos[0],
-      this.state.pos[1],
-      Math.abs((this.state.explosionSize)),
-      0,
-      2 * Math.PI,
-      false
-    );
-    ctx.lineWidth = 3;
-    ctx.strokeStyle = EXPLOSION_TYPES[this.state.explosionType].outline;
-    ctx.shadowColor = EXPLOSION_TYPES[this.state.explosionType].blur;
-    ctx.shadowBlur = 20;
-    ctx.globalAlpha = this.state.globalAlpha;
-    ctx.stroke();
-    ctx.shadowBlur = 0;
-    ctx.globalAlpha = 1;
-    this.state.explosionSize -= 1;
-    this.state.globalAlpha -= 0.02;
-    this.state.health -= 1;
-  }
-};
-
-
-/***/ }),
-/* 11 */
-/***/ (function(module, exports, __webpack_require__) {
-
-const objUtil = __webpack_require__(6);
-const MovingObject = __webpack_require__(3);
-
-const STAR_COLORS = ["red", "yellow", "orange", "green", "blue", "white"];
-
-module.exports = class Star extends MovingObject {
-
-  constructor() {
-    let pos = [Math.floor(Math.random() * 800), Math.floor(Math.random() * 500)];
-    let vel = [-Math.random(), 0];
-    super(pos, vel);
-    this.state = {
-      color: STAR_COLORS[Math.round(Math.random() * 6)],
-      pos: pos,
-      vel: vel,
-      size: Math.random(),
-    };
-  }
-
-  draw(ctx) {
-    ctx.beginPath();
-    ctx.arc(this.state.pos[0],
-      this.state.pos[1],
-      this.state.size,
-      0,
-      2 * Math.PI,
-      false
-    );
-    ctx.fillStyle = this.state.color;
-    ctx.fill();
-    ctx.lineWidth = 1;
-    ctx.strokeStyle = this.state.color;
-    ctx.stroke();
-  }
-
-};
-
-
-/***/ }),
 /* 12 */
 /***/ (function(module, exports, __webpack_require__) {
 
-const MovingObject = __webpack_require__(3);
-const PirateMissile = __webpack_require__(13);
-const objUtil = __webpack_require__(6);
+const MovingObject = __webpack_require__(0);
+const PirateMissile = __webpack_require__(6);
+const objUtil = __webpack_require__(1);
 
 module.exports = class Pirate extends MovingObject {
   constructor(pos, vel, addObject) {
@@ -884,44 +922,6 @@ module.exports = class Pirate extends MovingObject {
     let missile = new PirateMissile(pos);
     this.state.timeToMissile = 20;
     this.addObject(missile);
-  }
-
-};
-
-
-/***/ }),
-/* 13 */
-/***/ (function(module, exports, __webpack_require__) {
-
-const MovingObject = __webpack_require__(3);
-const Explosion = __webpack_require__(10);
-
-module.exports = class PirateMissile extends MovingObject {
-  constructor(pos) {
-    super({
-      pos: pos,
-      vel: [-2, 0],
-    });
-    this.graphic = $("#sprites3")[0];
-    this.state = {
-      sx: 0,
-      sy: 0,
-      sWidth: 14,
-      sHeight: 4,
-      pos: pos,
-      vel: [-2, 0],
-      dWidth: 14,
-      dHeight: 4,
-      radius: 3,
-      health: 1,
-      isDestructable: true,
-    };
-  }
-
-  move(ctx, graphic, state) {
-    state.vel = [state.vel[0] + (state.vel[0]/100), 0];
-    state.pos[0] = state.pos[0] + state.vel[0];
-    state.pos[1] = state.pos[1] + state.vel[1];
   }
 
 };
