@@ -8,9 +8,9 @@ This project is an arcade-style game where you play the plucky captain of a merc
 
 ### Technology & Features
 
-HTML5 & Canvas, JavaScript
-JS Libraries: Keymaster, jQuery
-Firebase DB backend (highscores)
+  * HTML5 & Canvas, JavaScript
+  * JS Libraries: Keymaster, jQuery
+  * Firebase DB backend (highscores)
 
 ### Functionality & Features
 
