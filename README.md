@@ -1,5 +1,7 @@
 # Merchant of Mercury
 
+![screenshot](https://github.com/Bhammy/merchantofmercury/blob/master/assets/mmscreen.png?raw=true)
+
 ### Background
 
 This project is an arcade-style game where you play the plucky captain of a merchant ship, dodging asteroids and pirate missiles in equal measure. The goal of the game is simply to survive as long as possible!
@@ -47,7 +49,7 @@ Game design: for every ten asteroids destroyed, the game adds an asteroid to the
 
 ### Wireframes
 
-![wireframe](https://github.com/Bhammy/merchantofmercury/blob/master/game.jpg?raw=true)
+![wireframe](https://github.com/Bhammy/merchantofmercury/blob/master/wireframe.jpg?raw=true)
 
 Player ship and spaceport sprite credits go to MillionthVector at: http://millionthvector.blogspot.com/p/free-sprites.html
 Other sprite credits go to: http://pixeljoint.com/pixelart/43069.htm
