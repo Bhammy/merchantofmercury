@@ -159,6 +159,9 @@ module.exports = class Game {
     }
     key("r", () => {
       if (!this.objects.some( (obj) => obj instanceof Ship)) {
+        this.objects.forEach( (obj) => {
+          obj.state.health = 0;
+        });
         let ship = new Ship([40, 218], [0, 0], this.addObject);
         this.objects.push(ship);
         this.gameOver = false;
