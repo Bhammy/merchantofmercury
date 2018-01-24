@@ -1,11 +1,12 @@
 //note - use Firebase for auth - just key/value pairs - save as bonus feature
 const changeBackgroundImage = require('./background');
 const Game = require('./lib/game');
+const ui = require('./lib/ui');
 const database = require('./lib/db');
 const gameLoop = require('./lib/game_loop');
 
 window.addEventListener("load", () => {
-  const currentHighscores = getScoreData(database);
+  const currentHighscores = ui.getScoreData(database);
   const canvas = document.getElementById('game-canvas');
   canvas.width = 800;
   canvas.height = 500;
@@ -33,7 +34,7 @@ window.addEventListener("load", () => {
     }
   });
 
-  $('form').on('submit', (e) => { submitHighScore(e); });
+  $('form').on('submit', (e) => { ui.submitHighScore(e); });
 
   let game = new Game(ctx, 20);
 
@@ -42,27 +43,3 @@ window.addEventListener("load", () => {
   }, 25);
 
 });
-
-const getScoreData = (database) => {
-  let scores = [];
-  database.ref("highscores").orderByChild('score').limitToLast(5).on('child_added', (snapshot) => {
-    scores.push(snapshot.val());
-    scores = scores.sort( (el1, el2) => {
-      return el2.score > el1.score;
-    });
-    
-  });
-};
-
-const submitHighScore = (e) => {
-  let name = $('input')[0].value;
-  if (name === "") {
-    name = "Anonymous";
-  }
-  let score = parseInt($('.form-score').text());
-  let highscore = {
-    name,
-    score,
-  };
-  database.ref("highscores").push(highscore);
-};

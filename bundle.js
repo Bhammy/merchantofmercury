@@ -612,11 +612,12 @@ module.exports = class PirateMissile extends MovingObject {
 //note - use Firebase for auth - just key/value pairs - save as bonus feature
 const changeBackgroundImage = __webpack_require__(8);
 const Game = __webpack_require__(9);
+const ui = __webpack_require__(176);
 const database = __webpack_require__(13);
 const gameLoop = __webpack_require__(11);
 
 window.addEventListener("load", () => {
-  const currentHighscores = getScoreData(database);
+  const currentHighscores = ui.getScoreData(database);
   const canvas = document.getElementById('game-canvas');
   canvas.width = 800;
   canvas.height = 500;
@@ -644,7 +645,7 @@ window.addEventListener("load", () => {
     }
   });
 
-  $('form').on('submit', (e) => { submitHighScore(e); });
+  $('form').on('submit', (e) => { ui.submitHighScore(e); });
 
   let game = new Game(ctx, 20);
 
@@ -653,30 +654,6 @@ window.addEventListener("load", () => {
   }, 25);
 
 });
-
-const getScoreData = (database) => {
-  let scores = [];
-  database.ref("highscores").orderByChild('score').limitToLast(5).on('child_added', (snapshot) => {
-    scores.push(snapshot.val());
-    scores = scores.sort( (el1, el2) => {
-      return el2.score > el1.score;
-    });
-    
-  });
-};
-
-const submitHighScore = (e) => {
-  let name = $('input')[0].value;
-  if (name === "") {
-    name = "Anonymous";
-  }
-  let score = parseInt($('.form-score').text());
-  let highscore = {
-    name,
-    score,
-  };
-  database.ref("highscores").push(highscore);
-};
 
 
 /***/ }),
@@ -728,20 +705,7 @@ module.exports = class Game {
       this.stars.push(new Star());
     }
     key("r", () => {
-      if (!this.objects.some( (obj) => obj instanceof Ship)) {
-        this.objects.forEach( (obj) => {
-          obj.state.health = 0;
-          obj.state.scoreValue = 0;
-        });
-        this.score = 0;
-        let ship = new Ship([40, 218], [0, 0], this.addObject);
-        this.objects.push(ship);
-        this.gameOver = false;
-        this.numAsteroids = this.origNumAsteroids;
-        $(".score").text("0");
-        $(".health").text("5");
-        $(".game-over").addClass("hidden");
-      }
+      this.restartGame();
     });
   }
 
@@ -753,7 +717,22 @@ module.exports = class Game {
     this.objects.splice(this.objects.indexOf(object), 1);
   }
 
-
+  restartGame() {
+    if (!this.objects.some( (obj) => obj instanceof Ship)) {
+      this.objects.forEach( (obj) => {
+        obj.state.health = 0;
+        obj.state.scoreValue = 0;
+      });
+      this.score = 0;
+      let ship = new Ship([40, 218], [0, 0], this.addObject);
+      this.objects.push(ship);
+      this.gameOver = false;
+      this.numAsteroids = this.origNumAsteroids;
+      $(".score").text("0");
+      $(".health").text("5");
+      $(".game-over").addClass("hidden");
+    }
+  }
 
 
 };
@@ -889,6 +868,9 @@ const gameTick = (ctx, game) => {
   //reserve this for events that happen over more than one frame
   if (game.gameOver) {
     $(".game-over").removeClass("hidden");
+    if (parseInt($(".form-score").text()) > 200) {
+      $(".submit-score").removeClass("hidden");
+    }
   } else {
     if (game.currentAsteroids < game.numAsteroids) {
       game.objects.push(new Asteroid(objUtil.randomStartPos(), objUtil.randomStartVel()));
@@ -27163,6 +27145,42 @@ function stop(id) {
 }
 
 //# sourceMappingURL=backoff.js.map
+
+
+/***/ }),
+/* 176 */
+/***/ (function(module, exports, __webpack_require__) {
+
+const database = __webpack_require__(13);
+
+const getScoreData = (database) => {
+  let scores = [];
+  database.ref("highscores").orderByChild('score').limitToLast(5).on('child_added', (snapshot) => {
+    scores.push(snapshot.val());
+    scores = scores.sort( (el1, el2) => {
+      return el2.score > el1.score;
+    });
+  });
+};
+
+const submitHighScore = (e) => {
+  e.preventDefault();
+  let name = $('input')[0].value;
+  if (name === "") {
+    name = "Anonymous";
+  }
+  let score = parseInt($('.form-score').text());
+  let highscore = {
+    name,
+    score,
+  };
+  database.ref("highscores").push(highscore);
+};
+
+module.exports = {
+  getScoreData,
+  submitHighScore,
+};
 
 
 /***/ })
