@@ -147,6 +147,18 @@ content {
   margin: auto;
 }
 
+.game-over div {
+  display: flex;
+  flex-direction: column;
+  flex-wrap: nowrap;
+  width: 100%;
+}
+
+.game-over form {
+  margin: auto;
+  text-align: center;
+}
+
 .hidden {
   display: none;
 }

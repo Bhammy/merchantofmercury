@@ -18,6 +18,7 @@
   },
   "homepage": "https://github.com/Bhammy/merchantofmercury#readme",
   "dependencies": {
+    "firebase": "^4.9.0",
     "webpack": "^3.10.0"
   }
 }

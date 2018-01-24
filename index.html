@@ -6,6 +6,7 @@
     <link href="./stylesheets/main.css" rel="stylesheet" type="text/css">
     <link href="https://fonts.googleapis.com/css?family=Michroma" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css?family=Rubik+Mono+One" rel="stylesheet">
+    <script src="https://www.gstatic.com/firebasejs/4.9.0/firebase.js"></script>
     <script
   src="https://code.jquery.com/jquery-3.2.1.js"
   integrity="sha256-DZAnKJ/6XZ9si04Hgrsxu/8s717jcIzLy3oi35EouyE="
@@ -33,6 +34,20 @@
         <div class="game-over hidden">
           <h1> GAME OVER </h1>
           <p> Sorry, you didn't make it through. Hit "r" to restart! </p>
+          </br>
+          <div class="submit-score">
+            <form>
+              </br>
+              <label> Name:
+                <input type="text" />
+              </label>
+              </br>
+              <p>Score: <span class="score form-score">0</span><p>
+              <button>
+                Submit
+              </button>
+            </form>
+          </div>
         </div>
         <canvas id="game-canvas"></canvas>
         <div class="game-score">
