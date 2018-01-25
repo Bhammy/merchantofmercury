@@ -868,7 +868,7 @@ const gameTick = (ctx, game) => {
   //reserve this for events that happen over more than one frame
   if (game.gameOver) {
     $(".game-over").removeClass("hidden");
-    if (parseInt($(".form-score").text()) > 200) {
+    if (parseInt($(".form-score").text()) > parseInt($(".high-scores-list li:last-child span").text())) {
       $(".submit-score").removeClass("hidden");
     }
   } else {
@@ -27157,14 +27157,24 @@ const getScoreData = (database) => {
   let scores = [];
   database.ref("highscores").orderByChild('score').limitToLast(5).on('child_added', (snapshot) => {
     scores.push(snapshot.val());
-    scores = scores.sort( (el1, el2) => {
-      return el2.score > el1.score;
-    });
+    if (scores.length === 5) {
+      appendScores(scores);
+    }
+  });
+};
+
+const appendScores = (scores) => {
+  scores = scores.sort( (el1, el2) => {
+    return el2.score > el1.score;
+  });
+
+  scores.forEach( (score) => {
+    $(".high-scores-list").append(`<li>${score.name} : <span>${score.score}</span> </li>`);
   });
 };
 
 const submitHighScore = (e) => {
-  e.preventDefault();
+  // e.preventDefault();
   let name = $('input')[0].value;
   if (name === "") {
     name = "Anonymous";

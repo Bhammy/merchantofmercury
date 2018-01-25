@@ -143,15 +143,11 @@ content {
   margin: 10px;
 }
 
-.game-over p {
-  margin: auto;
-}
-
 .game-over div {
   width: 100%;
 }
 
-.game-over form {
+.game-over form, p, ul, h3 {
   margin: auto;
   text-align: center;
 }
@@ -171,6 +167,18 @@ content {
   justify-content: space-between;
   text-shadow: 0px 0px 10px #00fffa;
   font-size: 20px;
+}
+
+.submit-score {
+  margin-top: 10px;
+}
+
+.high-scores h3, li{
+  text-shadow: 0px 0px 10px #00fffa;
+}
+
+.high-scores h3, ul {
+  margin: 0;
 }
 
 .game-score p {
